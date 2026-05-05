@@ -86,11 +86,25 @@
         <!-- 右侧区域：图库展示 -->
         <div class="right-panel">
             <h2>🖼️ AI作品集</h2>
-            <div class="gallery" id="gallery">
-                <p>加载中...</p>
+            <div style="max-width: 380px; margin: 0 auto; width: 100%;">
+                <div class="bg-gray-800 rounded-lg overflow-hidden w-full">
+                    <div class="bg-green-50 relative aspect-square">
+                        <canvas id="skin-canvas" class="absolute inset-0 w-full h-full" width="348" height="348" style="display: block; touch-action: none; width: 348px; height: 348px;" data-engine="three.js r156"></canvas>
+                        <div class="absolute top-4 right-4 flex gap-2">
+                            <button class="bg-black/30 hover:bg-black/50 text-white p-2 rounded-full transition-colors" title="Enter fullscreen">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M15 3h6v6"></path>
+                                    <path d="m21 3-7 7"></path>
+                                    <path d="m3 21 7-7"></path>
+                                    <path d="M9 21H3v-6"></path>
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/30 text-white px-3 py-1 rounded-full text-sm">Drag to rotate • Scroll to zoom</div>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
 
     <script>
         // 模拟图库数据
