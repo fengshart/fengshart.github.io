@@ -236,15 +236,15 @@
         gridHelper.position.y = -0.8;
         scene.add(gridHelper);
         
-        // ========== 2. 创建 Minecraft 方块人模型 ==========
+        // ========== 2. 创建修正后的 Minecraft 模型 ==========
         const group = new THREE.Group();
         const parts = {
             head:    { w: 0.8, h: 0.8, d: 0.8, pos: [0, 1.8, 0] },
             body:    { w: 0.8, h: 1.0, d: 0.4, pos: [0, 1.0, 0] },
-            armL:    { w: 0.4, h: 0.9, d: 0.4, pos: [-0.7, 1.2, 0] },
-            armR:    { w: 0.4, h: 0.9, d: 0.4, pos: [0.7, 1.2, 0] },
-            legL:    { w: 0.4, h: 0.9, d: 0.4, pos: [-0.4, 0.25, 0] },
-            legR:    { w: 0.4, h: 0.9, d: 0.4, pos: [0.4, 0.25, 0] }
+            armL:    { w: 0.4, h: 0.9, d: 0.4, pos: [-0.6, 1.3, 0] },   // 贴紧身体
+            armR:    { w: 0.4, h: 0.9, d: 0.4, pos: [0.6, 1.3, 0] },    // 贴紧身体
+            legL:    { w: 0.4, h: 0.9, d: 0.4, pos: [-0.35, 0.35, 0] }, // 左脚在左下方
+            legR:    { w: 0.4, h: 0.9, d: 0.4, pos: [0.35, 0.35, 0] }    // 右脚在右下方
         };
         
         const meshes = {};
@@ -260,15 +260,15 @@
         }
         scene.add(group);
         
-        // 手臂动画
+        // 手臂动画（前后摆动）
         let time = 0;
         function animate() {
             requestAnimationFrame(animate);
             time += 0.02;
             if (meshes.armL && meshes.armR) {
-                const swing = Math.sin(time) * 0.6;
-                meshes.armL.rotation.x = swing * 0.5;
-                meshes.armR.rotation.x = -swing * 0.5;
+                const swing = Math.sin(time) * 0.8;
+                meshes.armL.rotation.x = swing;
+                meshes.armR.rotation.x = -swing;
             }
             controls.update();
             renderer.render(scene, camera);
@@ -283,67 +283,79 @@
             renderer.setSize(width, height);
         });
         
-        // ========== 3. 应用皮肤纹理到 3D 模型 ==========
+        // ========== 3. 应用皮肤纹理（支持6个面独立贴图）==========
+        function getFaceTexture(img, x, y, w, h) {
+            const canvas = document.createElement('canvas');
+            canvas.width = w;
+            canvas.height = h;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, x, y, w, h, 0, 0, w, h);
+            const texture = new THREE.CanvasTexture(canvas);
+            texture.magFilter = THREE.NearestFilter;
+            return new THREE.MeshStandardMaterial({ map: texture });
+        }
+        
         function applySkinToModel(imageUrl) {
             const img = new Image();
             img.crossOrigin = "Anonymous";
             img.onload = () => {
-                const skinParts = {
-                head:   { x: 8,  y: 8,  w: 8, h: 8, mesh: meshes.head },
-                body:   { x: 20, y: 20, w: 8, h: 12, mesh: meshes.body },
-                armL:   { x: 40, y: 20, w: 4, h: 12, mesh: meshes.armL },
-                armR:   { x: 44, y: 20, w: 4, h: 12, mesh: meshes.armR },
-                legL:   { x: 4,  y: 20, w: 4, h: 12, mesh: meshes.legL },
-                legR:   { x: 8,  y: 20, w: 4, h: 12, mesh: meshes.legR }
+                // 头的6个面
+                const headMaterials = [
+                    getFaceTexture(img, 0, 8, 8, 8),   // 右
+                    getFaceTexture(img, 16, 8, 8, 8),  // 左
+                    getFaceTexture(img, 8, 0, 8, 8),   // 上
+                    getFaceTexture(img, 16, 0, 8, 8),  // 下
+                    getFaceTexture(img, 8, 8, 8, 8),   // 前
+                    getFaceTexture(img, 24, 8, 8, 8)   // 后
+                ];
+                
+                // 身体的6个面
+                const bodyMaterials = [
+                    getFaceTexture(img, 24, 20, 4, 12),  // 右
+                    getFaceTexture(img, 16, 20, 4, 12), // 左
+                    getFaceTexture(img, 20, 16, 8, 4),  // 上
+                    getFaceTexture(img, 20, 32, 8, 4),  // 下
+                    getFaceTexture(img, 20, 20, 8, 12), // 前
+                    getFaceTexture(img, 28, 20, 8, 12)  // 后
+                ];
+                
+                // 手臂和腿的材质
+                const armMat = getFaceTexture(img, 40, 20, 4, 12);
+                const legMat = getFaceTexture(img, 4, 20, 4, 12);
+                
+                if (meshes.head) meshes.head.material = headMaterials;
+                if (meshes.body) meshes.body.material = bodyMaterials;
+                if (meshes.armL) meshes.armL.material = armMat.clone();
+                if (meshes.armR) meshes.armR.material = armMat.clone();
+                if (meshes.legL) meshes.legL.material = legMat.clone();
+                if (meshes.legR) meshes.legR.material = legMat.clone();
+                
+                console.log('皮肤已应用（6面独立）');
             };
+            img.onerror = () => console.error('皮肤加载失败:', imageUrl);
+            img.src = imageUrl;
+        }
         
-            for (let key in skinParts) {
-                const part = skinParts[key];
-                if (part.mesh) {
-                    const canvas = document.createElement('canvas');
-                    canvas.width = part.w;
-                    canvas.height = part.h;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, part.x, part.y, part.w, part.h, 0, 0, part.w, part.h);
-                    const tex = new THREE.CanvasTexture(canvas);
-                    tex.magFilter = THREE.NearestFilter;
-                    part.mesh.material = new THREE.MeshStandardMaterial({ map: tex });
-                }
-            }
-            console.log('皮肤已应用');
-        };
-        img.onerror = () => console.error('皮肤加载失败:', imageUrl);
-        img.src = imageUrl;
-    }
-        
-        // 默认皮肤
+        // 默认加载 remember.png
         applySkinToModel('remember.png');
         
         // ========== 4. AI 生成皮肤的核心函数 ==========
-        // 注意：这里使用免费的 AI 图像生成 API（Pollinations.ai，无需 API Key）
         async function generateSkin(prompt, style) {
             const loadingDiv = document.getElementById('loading');
             const generateBtn = document.getElementById('generateBtn');
-            const msgDiv = document.getElementById('msg');
             
             loadingDiv.style.display = 'block';
             generateBtn.disabled = true;
-            msgDiv.className = 'status-msg';
             
             try {
-                // 构建详细的生成提示词
                 const fullPrompt = `Minecraft skin character, ${prompt}, ${style}, pixel art style, front view, game texture, 64x64 pixels, flat lighting`;
-                
-                // 使用 Pollinations.ai 免费图像生成 API
                 const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(fullPrompt)}?width=512&height=512&nologo=true`;
                 
-                // 加载图片并应用到模型
                 const img = new Image();
                 img.crossOrigin = "Anonymous";
                 
                 await new Promise((resolve, reject) => {
                     img.onload = () => {
-                        // 创建 canvas 调整尺寸为 64x64（Minecraft 皮肤标准）
                         const canvas = document.createElement('canvas');
                         canvas.width = 64;
                         canvas.height = 64;
@@ -351,30 +363,19 @@
                         ctx.drawImage(img, 0, 0, 64, 64);
                         const skinDataUrl = canvas.toDataURL('image/png');
                         
-                        // 显示生成的皮肤
-                        const skinImg = document.getElementById('skinImage');
-                        skinImg.src = skinDataUrl;
+                        document.getElementById('skinImage').src = skinDataUrl;
                         document.getElementById('generatedSkin').style.display = 'block';
-                        
-                        // 应用到 3D 模型
                         applySkinToModel(skinDataUrl);
-                        
-                        // 保存到历史记录
                         saveToHistory(prompt, style, skinDataUrl);
-                        
                         resolve();
                     };
-                    img.onerror = () => {
-                        reject(new Error('图片生成失败，请重试'));
-                    };
+                    img.onerror = () => reject(new Error('图片生成失败'));
                     img.src = imageUrl;
                 });
                 
-                showMessage('✅ 皮肤生成成功！已应用到3D模型', 'success');
-                
+                showMessage('✅ 皮肤生成成功！', 'success');
             } catch (error) {
-                console.error('生成失败:', error);
-                showMessage('❌ 生成失败：' + error.message + '，请稍后重试', 'error');
+                showMessage('❌ 生成失败：' + error.message, 'error');
             } finally {
                 loadingDiv.style.display = 'none';
                 generateBtn.disabled = false;
@@ -385,14 +386,7 @@
         function saveToHistory(prompt, style, imageDataUrl) {
             let history = localStorage.getItem('mc_skin_history');
             history = history ? JSON.parse(history) : [];
-            history.unshift({
-                id: Date.now(),
-                prompt: prompt,
-                style: style,
-                imageData: imageDataUrl,
-                time: new Date().toLocaleString()
-            });
-            // 只保留最近 10 条
+            history.unshift({ id: Date.now(), prompt, style, imageData: imageDataUrl, time: new Date().toLocaleString() });
             if (history.length > 10) history.pop();
             localStorage.setItem('mc_skin_history', JSON.stringify(history));
             loadHistory();
@@ -401,26 +395,17 @@
         function loadHistory() {
             let history = localStorage.getItem('mc_skin_history');
             const container = document.getElementById('demandList');
-            
             if (!history || history === '[]') {
                 container.innerHTML = '<p style="color:#999;">暂无生成记录</p>';
                 return;
             }
-            
             history = JSON.parse(history);
             let html = '';
             for (let i = 0; i < history.length; i++) {
                 const h = history[i];
-                html += `
-                    <div class="demand-item" data-index="${i}">
-                        <strong>📝 ${escapeHtml(h.prompt.substring(0, 50))}</strong>
-                        <div style="font-size: 12px; color: #666;">🎭 ${h.style} | 🕐 ${h.time}</div>
-                    </div>
-                `;
+                html += `<div class="demand-item" data-index="${i}"><strong>📝 ${escapeHtml(h.prompt.substring(0, 50))}</strong><div style="font-size: 12px; color: #666;">🎭 ${h.style} | 🕐 ${h.time}</div></div>`;
             }
             container.innerHTML = html;
-            
-            // 绑定点击事件，重新加载历史皮肤
             document.querySelectorAll('.demand-item').forEach((item, idx) => {
                 item.addEventListener('click', () => {
                     const historyData = JSON.parse(localStorage.getItem('mc_skin_history'));
@@ -453,9 +438,7 @@
             const msgDiv = document.getElementById('msg');
             msgDiv.textContent = text;
             msgDiv.className = `status-msg status-${type}`;
-            setTimeout(() => {
-                msgDiv.className = 'status-msg';
-            }, 3000);
+            setTimeout(() => { msgDiv.className = 'status-msg'; }, 3000);
         }
         
         // ========== 6. 下载皮肤 ==========
@@ -476,21 +459,17 @@
             e.preventDefault();
             const prompt = document.getElementById('prompt').value.trim();
             const style = document.getElementById('style').value;
-            
             if (!prompt) {
                 showMessage('请填写角色描述', 'error');
                 return;
             }
-            
             await generateSkin(prompt, style);
         });
         
         document.getElementById('clearHistory').addEventListener('click', clearHistory);
         
-        // 初始化加载历史
         loadHistory();
         
-        // 监听容器大小变化
         const resizeObserver = new ResizeObserver(() => {
             const width = container.clientWidth;
             const height = container.clientHeight;
