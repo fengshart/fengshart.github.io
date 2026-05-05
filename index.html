@@ -201,7 +201,6 @@
         <h1>🎨 Minecraft 皮肤分区编辑器 — 拖拽调整</h1>
         
         <div class="editor-layout">
-            <!-- 左侧：画布区 -->
             <div class="canvas-area">
                 <div class="toolbar">
                     <button id="uploadBtn">📁 上传皮肤</button>
@@ -225,11 +224,10 @@
                     <div>• <span style="color:#00ff00;">绿色框</span> = 其他区域</div>
                     <div>• <strong>鼠标拖拽</strong> = 移动选中区域</div>
                     <div>• <strong>Shift + 拖拽</strong> = 调整区域大小</div>
-                    <div>• <strong>点击区域</strong> = 选中（左侧也会同步高亮）</div>
+                    <div>• <strong>点击区域</strong> = 选中</div>
                 </div>
             </div>
             
-            <!-- 右侧：控制区 -->
             <div class="controls-area">
                 <h3 style="margin-bottom: 15px;">📋 区域列表</h3>
                 <div class="region-list" id="regionList"></div>
@@ -250,84 +248,72 @@
     <script>
         // ========== 72 分区定义 ==========
         const regions = {
-            // 头内层
             '头正面内层': { x: 8, y: 8, w: 8, h: 8, group: 'head' },
             '头背面内层': { x: 24, y: 8, w: 8, h: 8, group: 'head' },
             '头左侧内层': { x: 0, y: 8, w: 8, h: 8, group: 'head' },
             '头右侧内层': { x: 16, y: 8, w: 8, h: 8, group: 'head' },
             '头顶内层': { x: 8, y: 0, w: 8, h: 8, group: 'head' },
             '头底内层': { x: 16, y: 0, w: 8, h: 8, group: 'head' },
-            // 头外层
             '头正面外层': { x: 8, y: 40, w: 8, h: 8, group: 'hat' },
             '头背面外层': { x: 24, y: 40, w: 8, h: 8, group: 'hat' },
             '头左侧外层': { x: 0, y: 40, w: 8, h: 8, group: 'hat' },
             '头右侧外层': { x: 16, y: 40, w: 8, h: 8, group: 'hat' },
             '头顶外层': { x: 8, y: 32, w: 8, h: 8, group: 'hat' },
             '头底外层': { x: 16, y: 32, w: 8, h: 8, group: 'hat' },
-            // 身体内层
             '身体正面内层': { x: 20, y: 20, w: 8, h: 12, group: 'body' },
             '身体背面内层': { x: 28, y: 20, w: 8, h: 12, group: 'body' },
             '身体左侧内层': { x: 16, y: 20, w: 4, h: 12, group: 'body' },
             '身体右侧内层': { x: 24, y: 20, w: 4, h: 12, group: 'body' },
             '身体顶面内层': { x: 20, y: 16, w: 8, h: 4, group: 'body' },
             '身体底面内层': { x: 20, y: 32, w: 8, h: 4, group: 'body' },
-            // 身体外层
             '身体正面外层': { x: 20, y: 52, w: 8, h: 12, group: 'jacket' },
             '身体背面外层': { x: 28, y: 52, w: 8, h: 12, group: 'jacket' },
             '身体左侧外层': { x: 16, y: 52, w: 4, h: 12, group: 'jacket' },
             '身体右侧外层': { x: 24, y: 52, w: 4, h: 12, group: 'jacket' },
             '身体顶面外层': { x: 20, y: 48, w: 8, h: 4, group: 'jacket' },
             '身体底面外层': { x: 20, y: 64, w: 8, h: 4, group: 'jacket' },
-            // 右臂内层
             '右臂正面内层': { x: 40, y: 20, w: 4, h: 12, group: 'rightArm' },
             '右臂背面内层': { x: 44, y: 20, w: 4, h: 12, group: 'rightArm' },
             '右臂左侧内层': { x: 36, y: 20, w: 4, h: 12, group: 'rightArm' },
             '右臂右侧内层': { x: 48, y: 20, w: 4, h: 12, group: 'rightArm' },
             '右臂顶面内层': { x: 40, y: 16, w: 4, h: 4, group: 'rightArm' },
             '右臂底面内层': { x: 40, y: 32, w: 4, h: 4, group: 'rightArm' },
-            // 右臂外层
             '右臂正面外层': { x: 40, y: 52, w: 4, h: 12, group: 'rightSleeve' },
             '右臂背面外层': { x: 44, y: 52, w: 4, h: 12, group: 'rightSleeve' },
             '右臂左侧外层': { x: 36, y: 52, w: 4, h: 12, group: 'rightSleeve' },
             '右臂右侧外层': { x: 48, y: 52, w: 4, h: 12, group: 'rightSleeve' },
             '右臂顶面外层': { x: 40, y: 48, w: 4, h: 4, group: 'rightSleeve' },
             '右臂底面外层': { x: 40, y: 64, w: 4, h: 4, group: 'rightSleeve' },
-            // 左臂内层
             '左臂正面内层': { x: 36, y: 20, w: 4, h: 12, group: 'leftArm' },
             '左臂背面内层': { x: 32, y: 20, w: 4, h: 12, group: 'leftArm' },
             '左臂左侧内层': { x: 28, y: 20, w: 4, h: 12, group: 'leftArm' },
             '左臂右侧内层': { x: 40, y: 20, w: 4, h: 12, group: 'leftArm' },
             '左臂顶面内层': { x: 36, y: 16, w: 4, h: 4, group: 'leftArm' },
             '左臂底面内层': { x: 36, y: 32, w: 4, h: 4, group: 'leftArm' },
-            // 左臂外层
             '左臂正面外层': { x: 36, y: 52, w: 4, h: 12, group: 'leftSleeve' },
             '左臂背面外层': { x: 32, y: 52, w: 4, h: 12, group: 'leftSleeve' },
             '左臂左侧外层': { x: 28, y: 52, w: 4, h: 12, group: 'leftSleeve' },
             '左臂右侧外层': { x: 40, y: 52, w: 4, h: 12, group: 'leftSleeve' },
             '左臂顶面外层': { x: 36, y: 48, w: 4, h: 4, group: 'leftSleeve' },
             '左臂底面外层': { x: 36, y: 64, w: 4, h: 4, group: 'leftSleeve' },
-            // 右腿内层
             '右腿正面内层': { x: 4, y: 20, w: 4, h: 12, group: 'rightLeg' },
             '右腿背面内层': { x: 8, y: 20, w: 4, h: 12, group: 'rightLeg' },
             '右腿左侧内层': { x: 0, y: 20, w: 4, h: 12, group: 'rightLeg' },
             '右腿右侧内层': { x: 12, y: 20, w: 4, h: 12, group: 'rightLeg' },
             '右腿顶面内层': { x: 4, y: 16, w: 4, h: 4, group: 'rightLeg' },
             '右腿底面内层': { x: 4, y: 32, w: 4, h: 4, group: 'rightLeg' },
-            // 右腿外层
             '右腿正面外层': { x: 4, y: 52, w: 4, h: 12, group: 'rightPants' },
             '右腿背面外层': { x: 8, y: 52, w: 4, h: 12, group: 'rightPants' },
             '右腿左侧外层': { x: 0, y: 52, w: 4, h: 12, group: 'rightPants' },
             '右腿右侧外层': { x: 12, y: 52, w: 4, h: 12, group: 'rightPants' },
             '右腿顶面外层': { x: 4, y: 48, w: 4, h: 4, group: 'rightPants' },
             '右腿底面外层': { x: 4, y: 64, w: 4, h: 4, group: 'rightPants' },
-            // 左腿内层
             '左腿正面内层': { x: 0, y: 20, w: 4, h: 12, group: 'leftLeg' },
             '左腿背面内层': { x: 4, y: 20, w: 4, h: 12, group: 'leftLeg' },
             '左腿左侧内层': { x: -4, y: 20, w: 4, h: 12, group: 'leftLeg' },
             '左腿右侧内层': { x: 8, y: 20, w: 4, h: 12, group: 'leftLeg' },
             '左腿顶面内层': { x: 0, y: 16, w: 4, h: 4, group: 'leftLeg' },
             '左腿底面内层': { x: 0, y: 32, w: 4, h: 4, group: 'leftLeg' },
-            // 左腿外层
             '左腿正面外层': { x: 0, y: 52, w: 4, h: 12, group: 'leftPants' },
             '左腿背面外层': { x: 4, y: 52, w: 4, h: 12, group: 'leftPants' },
             '左腿左侧外层': { x: -4, y: 52, w: 4, h: 12, group: 'leftPants' },
@@ -342,7 +328,6 @@
         let currentImage = null;
         let selectedName = '头正面内层';
         let showGrid = true;
-        let zoom = 1;
         
         // 拖拽状态
         let isDragging = false;
@@ -354,16 +339,16 @@
         function initCanvas() {
             canvas.width = 512;
             canvas.height = 512;
-            draw();
+            drawFull();
         }
         
-        function draw() {
+        // 绘制背景图片
+        function drawBackground() {
             if (currentImage) {
                 ctx.drawImage(currentImage, 0, 0, 512, 512);
             } else {
                 ctx.fillStyle = '#2d2d44';
                 ctx.fillRect(0, 0, 512, 512);
-                // 绘制默认格子
                 ctx.fillStyle = '#3d3d5e';
                 for (let i = 0; i < 64; i++) {
                     for (let j = 0; j < 64; j++) {
@@ -373,8 +358,10 @@
                     }
                 }
             }
-            
-            // 绘制所有区域框
+        }
+        
+        // 绘制所有框
+        function drawAllBoxes() {
             for (let [name, region] of Object.entries(regions)) {
                 const x = region.x * 8;
                 const y = region.y * 8;
@@ -390,7 +377,6 @@
                 }
                 ctx.strokeRect(x, y, w, h);
                 
-                // 显示区域名称缩写
                 if (w >= 16 && h >= 16) {
                     ctx.font = 'bold 8px monospace';
                     ctx.fillStyle = '#ffffff';
@@ -399,21 +385,34 @@
                     ctx.shadowBlur = 0;
                 }
             }
-            
-            // 绘制网格
-            if (showGrid) {
-                ctx.beginPath();
-                ctx.strokeStyle = '#4a4a6a';
-                ctx.lineWidth = 0.5;
-                for (let i = 0; i <= 64; i++) {
-                    ctx.moveTo(i * 8, 0);
-                    ctx.lineTo(i * 8, 512);
-                    ctx.stroke();
-                    ctx.moveTo(0, i * 8);
-                    ctx.lineTo(512, i * 8);
-                    ctx.stroke();
-                }
+        }
+        
+        // 绘制网格
+        function drawGrid() {
+            if (!showGrid) return;
+            ctx.beginPath();
+            ctx.strokeStyle = '#4a4a6a';
+            ctx.lineWidth = 0.5;
+            for (let i = 0; i <= 64; i++) {
+                ctx.moveTo(i * 8, 0);
+                ctx.lineTo(i * 8, 512);
+                ctx.stroke();
+                ctx.moveTo(0, i * 8);
+                ctx.lineTo(512, i * 8);
+                ctx.stroke();
             }
+        }
+        
+        // 完整重绘（解决重影问题）
+        function drawFull() {
+            // 1. 清空画布
+            ctx.clearRect(0, 0, 512, 512);
+            // 2. 绘制背景图片
+            drawBackground();
+            // 3. 绘制所有框
+            drawAllBoxes();
+            // 4. 绘制网格
+            drawGrid();
             
             // 更新坐标输入框
             const region = regions[selectedName];
@@ -425,7 +424,7 @@
             }
         }
         
-        // 获取鼠标在 canvas 上的精确坐标（像素级）
+        // 获取鼠标在 canvas 上的精确坐标
         function getMouseCanvasPos(e) {
             const rect = canvas.getBoundingClientRect();
             const scaleX = canvas.width / rect.width;
@@ -458,7 +457,7 @@
             
             if (found) {
                 selectedName = found.name;
-                draw();
+                drawFull();
                 updateRegionListSelection();
                 document.getElementById('statusBar').innerHTML = `✅ 已选中: ${selectedName} | 拖拽移动 | Shift+拖拽调整大小`;
                 
@@ -487,8 +486,7 @@
                 const region = regions[selectedName];
                 region.x = Math.max(0, Math.min(64 - region.w, dragStartRegion.x + deltaX));
                 region.y = Math.max(0, Math.min(64 - region.h, dragStartRegion.y + deltaY));
-                draw();
-                updateCoordsInput();
+                drawFull();  // 完整重绘，无重影
                 document.getElementById('statusBar').innerHTML = `📐 ${selectedName} 移动到了 (${region.x}, ${region.y})`;
             }
             
@@ -498,8 +496,7 @@
                 const newH = Math.max(1, Math.min(64 - region.y, dragStartRegion.h + deltaY));
                 region.w = newW;
                 region.h = newH;
-                draw();
-                updateCoordsInput();
+                drawFull();  // 完整重绘，无重影
                 document.getElementById('statusBar').innerHTML = `📏 ${selectedName} 大小调整为 ${region.w}x${region.h}`;
             }
         });
@@ -510,37 +507,26 @@
             dragStartRegion = null;
         });
         
-        // 更新坐标输入框
-        function updateCoordsInput() {
-            const region = regions[selectedName];
-            if (region) {
-                document.getElementById('coordX').value = region.x;
-                document.getElementById('coordY').value = region.y;
-                document.getElementById('coordW').value = region.w;
-                document.getElementById('coordH').value = region.h;
-            }
-        }
-        
         // 坐标输入框事件
         document.getElementById('coordX').addEventListener('change', (e) => {
             const region = regions[selectedName];
             if (region) region.x = Math.max(0, Math.min(64 - region.w, parseInt(e.target.value) || 0));
-            draw();
+            drawFull();
         });
         document.getElementById('coordY').addEventListener('change', (e) => {
             const region = regions[selectedName];
             if (region) region.y = Math.max(0, Math.min(64 - region.h, parseInt(e.target.value) || 0));
-            draw();
+            drawFull();
         });
         document.getElementById('coordW').addEventListener('change', (e) => {
             const region = regions[selectedName];
             if (region) region.w = Math.max(1, Math.min(64 - region.x, parseInt(e.target.value) || 1));
-            draw();
+            drawFull();
         });
         document.getElementById('coordH').addEventListener('change', (e) => {
             const region = regions[selectedName];
             if (region) region.h = Math.max(1, Math.min(64 - region.y, parseInt(e.target.value) || 1));
-            draw();
+            drawFull();
         });
         
         // 构建左侧区域列表
@@ -569,13 +555,12 @@
             }
             container.innerHTML = html;
             
-            // 绑定点击事件
             document.querySelectorAll('.region-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
                     selectedName = btn.dataset.name;
                     document.querySelectorAll('.region-btn').forEach(b => b.classList.remove('selected'));
                     btn.classList.add('selected');
-                    draw();
+                    drawFull();
                     document.getElementById('statusBar').innerHTML = `✅ 已选中: ${selectedName}`;
                 });
             });
@@ -603,7 +588,7 @@
                     const img = new Image();
                     img.onload = () => {
                         currentImage = img;
-                        draw();
+                        drawFull();
                     };
                     img.src = ev.target.result;
                 };
@@ -627,7 +612,6 @@
         
         // 缩放功能
         let currentZoom = 1;
-        const canvasContainer = document.getElementById('canvasContainer');
         document.getElementById('zoomInBtn').addEventListener('click', () => {
             currentZoom = Math.min(3, currentZoom + 0.25);
             canvas.style.width = (512 * currentZoom) + 'px';
@@ -651,13 +635,13 @@
             currentZoom = 1;
             canvas.style.width = '512px';
             canvas.style.height = '512px';
-            draw();
+            drawFull();
         });
         
         document.getElementById('toggleGridBtn').addEventListener('click', (e) => {
             showGrid = !showGrid;
             e.target.classList.toggle('active', showGrid);
-            draw();
+            drawFull();
         });
         
         // 初始化
@@ -668,7 +652,7 @@
         const defaultImg = new Image();
         defaultImg.onload = () => {
             currentImage = defaultImg;
-            draw();
+            drawFull();
         };
         defaultImg.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAZdEVYdFNvZnR3YXJlAHBhaW50Lm5ldCA0LjAuMTM0A1t6AAAAAElFTkSuQmCC';
     </script>
