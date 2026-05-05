@@ -6,132 +6,29 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: Arial, sans-serif; background: #f0f2f5; min-height: 100vh; padding: 20px; }
-        
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            display: flex;
-            gap: 20px;
-            flex-wrap: wrap;
-        }
-        
-        .left-panel {
-            flex: 1;
-            min-width: 350px;
-            background: white;
-            border-radius: 16px;
-            padding: 24px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-        
-        .right-panel {
-            flex: 2;
-            min-width: 500px;
-            background: white;
-            border-radius: 16px;
-            padding: 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-        
+        .container { max-width: 1400px; margin: 0 auto; display: flex; gap: 20px; flex-wrap: wrap; }
+        .left-panel { flex: 1; min-width: 350px; background: white; border-radius: 16px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .right-panel { flex: 2; min-width: 500px; background: white; border-radius: 16px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
         .form-group { margin-bottom: 20px; }
         label { display: block; font-weight: bold; margin-bottom: 8px; color: #333; }
-        textarea, select { 
-            width: 100%; 
-            padding: 12px; 
-            border: 1px solid #ddd; 
-            border-radius: 8px; 
-            font-size: 14px;
-            font-family: inherit;
-        }
-        button { 
-            background: #007bff; 
-            color: white; 
-            padding: 12px 24px; 
-            border: none; 
-            border-radius: 8px; 
-            cursor: pointer; 
-            font-size: 16px; 
-            width: 100%; 
-        }
+        textarea, select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; font-family: inherit; }
+        button { background: #007bff; color: white; padding: 12px 24px; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; width: 100%; }
         button:hover { background: #0056b3; }
         button:disabled { background: #ccc; cursor: not-allowed; }
-        
-        #canvas-container {
-            width: 100%;
-            height: 450px;
-            background: #1a1a2e;
-            border-radius: 16px;
-            overflow: hidden;
-            cursor: grab;
-            margin-bottom: 20px;
-        }
-        
-        .generated-skin {
-            margin-top: 20px;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 12px;
-            text-align: center;
-        }
-        
-        .generated-skin img {
-            max-width: 200px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-        }
-        
-        .loading {
-            display: none;
-            text-align: center;
-            padding: 20px;
-        }
-        
-        .spinner {
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #007bff;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 10px;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        .status-msg {
-            margin-top: 16px;
-            padding: 10px;
-            border-radius: 8px;
-            display: none;
-        }
+        #canvas-container { width: 100%; height: 450px; background: #1a1a2e; border-radius: 16px; overflow: hidden; cursor: grab; margin-bottom: 20px; }
+        .generated-skin { margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 12px; text-align: center; }
+        .generated-skin img { max-width: 200px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+        .loading { display: none; text-align: center; padding: 20px; }
+        .spinner { border: 3px solid #f3f3f3; border-top: 3px solid #007bff; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 10px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .status-msg { margin-top: 16px; padding: 10px; border-radius: 8px; display: none; }
         .status-success { background: #d4edda; color: #155724; display: block; }
         .status-error { background: #f8d7da; color: #721c24; display: block; }
         .status-info { background: #d1ecf1; color: #0c5460; display: block; }
-        
-        .demand-list {
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 1px solid #ddd;
-            max-height: 300px;
-            overflow-y: auto;
-        }
-        
-        .demand-item {
-            padding: 12px;
-            border-bottom: 1px solid #eee;
-            background: #f9f9f9;
-            border-radius: 8px;
-            margin-bottom: 8px;
-            cursor: pointer;
-        }
+        .demand-list { margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; max-height: 300px; overflow-y: auto; }
+        .demand-item { padding: 12px; border-bottom: 1px solid #eee; background: #f9f9f9; border-radius: 8px; margin-bottom: 8px; cursor: pointer; }
         .demand-item:hover { background: #e9ecef; }
-        
-        @media (max-width: 768px) {
-            .left-panel, .right-panel { min-width: auto; }
-        }
+        @media (max-width: 768px) { .left-panel, .right-panel { min-width: auto; } }
     </style>
 </head>
 <body>
@@ -155,37 +52,31 @@
                 <button type="submit" id="generateBtn">✨ 生成皮肤</button>
             </form>
             <div id="msg" class="status-msg"></div>
-            
             <div class="demand-list">
                 <h3>📋 历史记录</h3>
                 <div id="demandList">暂无记录</div>
                 <button id="clearHistory" style="margin-top: 10px; background: #dc3545;">清空历史</button>
             </div>
         </div>
-
         <div class="right-panel">
             <h2>🎮 3D 皮肤预览</h2>
             <div id="canvas-container"></div>
-            
             <div class="loading" id="loading">
                 <div class="spinner"></div>
                 <p>AI 正在生成皮肤，请稍候...</p>
             </div>
-            
             <div class="generated-skin" id="generatedSkin" style="display: none;">
                 <h4>📸 生成的皮肤贴图</h4>
                 <img id="skinImage" alt="生成的皮肤">
                 <br>
                 <button id="downloadSkin" style="margin-top: 10px; width: auto; padding: 8px 20px;">💾 下载皮肤</button>
             </div>
-            
             <div class="control-info" style="margin-top: 15px; padding: 10px; background: #f8f9fa; border-radius: 8px; text-align: center; font-size: 14px;">
                 🖱️ 鼠标拖拽旋转 | 右键平移 | 滚轮缩放 | 皮肤会实时应用到3D模型
             </div>
         </div>
     </div>
 
-    <!-- Three.js 3D 引擎 -->
     <script type="importmap">
         {
             "imports": {
@@ -199,7 +90,7 @@
         import * as THREE from 'three';
         import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
         
-        // ========== 1. 初始化 3D 场景 ==========
+        // 初始化场景
         const container = document.getElementById('canvas-container');
         const scene = new THREE.Scene();
         scene.background = new THREE.Color(0x1a1a2e);
@@ -216,9 +107,6 @@
         
         const controls = new OrbitControls(camera, renderer.domElement);
         controls.enableDamping = true;
-        controls.dampingFactor = 0.05;
-        controls.rotateSpeed = 1.0;
-        controls.zoomSpeed = 1.2;
         controls.target.set(0, 1.5, 0);
         
         // 灯光
@@ -236,39 +124,92 @@
         gridHelper.position.y = -0.8;
         scene.add(gridHelper);
         
-        // ========== 2. 创建修正后的 Minecraft 模型 ==========
+        // 创建模型组
         const group = new THREE.Group();
-        const parts = {
-            head:    { w: 0.8, h: 0.8, d: 0.8, pos: [0, 1.8, 0] },
-            body:    { w: 0.8, h: 1.0, d: 0.4, pos: [0, 1.0, 0] },
-            armL:    { w: 0.4, h: 0.9, d: 0.4, pos: [-0.6, 1.3, 0] },   // 贴紧身体
-            armR:    { w: 0.4, h: 0.9, d: 0.4, pos: [0.6, 1.3, 0] },    // 贴紧身体
-            legL:    { w: 0.4, h: 0.9, d: 0.4, pos: [-0.35, 0.35, 0] }, // 左脚在左下方
-            legR:    { w: 0.4, h: 0.9, d: 0.4, pos: [0.35, 0.35, 0] }    // 右脚在右下方
+        
+        // 修正后的位置：手臂贴身体，腿在身体下方左右两侧
+        const partsPos = {
+            head:    [0, 1.8, 0],
+            body:    [0, 1.0, 0],
+            armLeft: [-0.62, 1.3, 0],
+            armRight:[0.62, 1.3, 0],
+            legLeft: [-0.35, 0.35, 0],
+            legRight:[0.35, 0.35, 0]
         };
         
         const meshes = {};
-        const tempMat = new THREE.MeshStandardMaterial({ color: 0x88aaff });
         
-        for (let [name, cfg] of Object.entries(parts)) {
-            const geometry = new THREE.BoxGeometry(cfg.w, cfg.h, cfg.d);
-            const mesh = new THREE.Mesh(geometry, tempMat.clone());
-            mesh.position.set(cfg.pos[0], cfg.pos[1], cfg.pos[2]);
-            mesh.castShadow = true;
-            group.add(mesh);
-            meshes[name] = mesh;
-        }
+        // 创建头部（6个面独立）
+        const headGeo = new THREE.BoxGeometry(0.8, 0.8, 0.8);
+        const headMaterials = [
+            new THREE.MeshStandardMaterial({ color: 0x88aaff }), // 右
+            new THREE.MeshStandardMaterial({ color: 0x88aaff }), // 左
+            new THREE.MeshStandardMaterial({ color: 0x88aaff }), // 上
+            new THREE.MeshStandardMaterial({ color: 0x88aaff }), // 下
+            new THREE.MeshStandardMaterial({ color: 0x88aaff }), // 前
+            new THREE.MeshStandardMaterial({ color: 0x88aaff })  // 后
+        ];
+        const head = new THREE.Mesh(headGeo, headMaterials);
+        head.position.set(partsPos.head[0], partsPos.head[1], partsPos.head[2]);
+        head.castShadow = true;
+        group.add(head);
+        meshes.head = head;
+        
+        // 创建身体（6个面独立）
+        const bodyGeo = new THREE.BoxGeometry(0.8, 1.0, 0.4);
+        const bodyMaterials = [
+            new THREE.MeshStandardMaterial({ color: 0x88aaff }),
+            new THREE.MeshStandardMaterial({ color: 0x88aaff }),
+            new THREE.MeshStandardMaterial({ color: 0x88aaff }),
+            new THREE.MeshStandardMaterial({ color: 0x88aaff }),
+            new THREE.MeshStandardMaterial({ color: 0x88aaff }),
+            new THREE.MeshStandardMaterial({ color: 0x88aaff })
+        ];
+        const body = new THREE.Mesh(bodyGeo, bodyMaterials);
+        body.position.set(partsPos.body[0], partsPos.body[1], partsPos.body[2]);
+        body.castShadow = true;
+        group.add(body);
+        meshes.body = body;
+        
+        // 创建手臂和腿（简单材质，后续替换贴图）
+        const armGeo = new THREE.BoxGeometry(0.4, 0.9, 0.4);
+        const legGeo = new THREE.BoxGeometry(0.4, 0.9, 0.4);
+        
+        const armLeft = new THREE.Mesh(armGeo, new THREE.MeshStandardMaterial({ color: 0x88aaff }));
+        armLeft.position.set(partsPos.armLeft[0], partsPos.armLeft[1], partsPos.armLeft[2]);
+        armLeft.castShadow = true;
+        group.add(armLeft);
+        meshes.armLeft = armLeft;
+        
+        const armRight = new THREE.Mesh(armGeo, new THREE.MeshStandardMaterial({ color: 0x88aaff }));
+        armRight.position.set(partsPos.armRight[0], partsPos.armRight[1], partsPos.armRight[2]);
+        armRight.castShadow = true;
+        group.add(armRight);
+        meshes.armRight = armRight;
+        
+        const legLeft = new THREE.Mesh(legGeo, new THREE.MeshStandardMaterial({ color: 0x88aaff }));
+        legLeft.position.set(partsPos.legLeft[0], partsPos.legLeft[1], partsPos.legLeft[2]);
+        legLeft.castShadow = true;
+        group.add(legLeft);
+        meshes.legLeft = legLeft;
+        
+        const legRight = new THREE.Mesh(legGeo, new THREE.MeshStandardMaterial({ color: 0x88aaff }));
+        legRight.position.set(partsPos.legRight[0], partsPos.legRight[1], partsPos.legRight[2]);
+        legRight.castShadow = true;
+        group.add(legRight);
+        meshes.legRight = legRight;
+        
         scene.add(group);
         
-        // 手臂动画（前后摆动）
+        // 手臂动画（绕Z轴左右摆）
         let time = 0;
         function animate() {
             requestAnimationFrame(animate);
             time += 0.02;
-            if (meshes.armL && meshes.armR) {
+            if (meshes.armLeft && meshes.armRight) {
                 const swing = Math.sin(time) * 0.8;
-                meshes.armL.rotation.x = swing;
-                meshes.armR.rotation.x = -swing;
+                meshes.armLeft.rotation.z = swing;
+                meshes.armRight.rotation.z = -swing;
             }
             controls.update();
             renderer.render(scene, camera);
@@ -283,52 +224,54 @@
             renderer.setSize(width, height);
         });
         
-        // ========== 3. 应用皮肤纹理（支持6个面独立贴图）==========
-        function getFaceTexture(img, x, y, w, h) {
+        // 从皮肤图片裁切指定区域生成材质
+        function getFaceMaterial(img, x, y, w, h) {
             const canvas = document.createElement('canvas');
             canvas.width = w;
             canvas.height = h;
             const ctx = canvas.getContext('2d');
             ctx.drawImage(img, x, y, w, h, 0, 0, w, h);
-            const texture = new THREE.CanvasTexture(canvas);
-            texture.magFilter = THREE.NearestFilter;
-            return new THREE.MeshStandardMaterial({ map: texture });
+            const tex = new THREE.CanvasTexture(canvas);
+            tex.magFilter = THREE.NearestFilter;
+            return new THREE.MeshStandardMaterial({ map: tex });
         }
         
+        // 应用皮肤到模型各个部位
         function applySkinToModel(imageUrl) {
             const img = new Image();
             img.crossOrigin = "Anonymous";
             img.onload = () => {
-                // 头的6个面
-                const headMaterials = [
-                    getFaceTexture(img, 0, 8, 8, 8),   // 右
-                    getFaceTexture(img, 16, 8, 8, 8),  // 左
-                    getFaceTexture(img, 8, 0, 8, 8),   // 上
-                    getFaceTexture(img, 16, 0, 8, 8),  // 下
-                    getFaceTexture(img, 8, 8, 8, 8),   // 前
-                    getFaceTexture(img, 24, 8, 8, 8)   // 后
+                // 头部6个面（标准 Minecraft 皮肤坐标 64x64）
+                const headMats = [
+                    getFaceMaterial(img, 0, 8, 8, 8),   // 右
+                    getFaceMaterial(img, 16, 8, 8, 8),  // 左
+                    getFaceMaterial(img, 8, 0, 8, 8),   // 上
+                    getFaceMaterial(img, 16, 0, 8, 8),  // 下
+                    getFaceMaterial(img, 8, 8, 8, 8),   // 前
+                    getFaceMaterial(img, 24, 8, 8, 8)   // 后
                 ];
                 
-                // 身体的6个面
-                const bodyMaterials = [
-                    getFaceTexture(img, 24, 20, 4, 12),  // 右
-                    getFaceTexture(img, 16, 20, 4, 12), // 左
-                    getFaceTexture(img, 20, 16, 8, 4),  // 上
-                    getFaceTexture(img, 20, 32, 8, 4),  // 下
-                    getFaceTexture(img, 20, 20, 8, 12), // 前
-                    getFaceTexture(img, 28, 20, 8, 12)  // 后
+                // 身体6个面
+                const bodyMats = [
+                    getFaceMaterial(img, 24, 20, 4, 12),  // 右
+                    getFaceMaterial(img, 16, 20, 4, 12), // 左
+                    getFaceMaterial(img, 20, 16, 8, 4),  // 上
+                    getFaceMaterial(img, 20, 32, 8, 4),  // 下
+                    getFaceMaterial(img, 20, 20, 8, 12), // 前
+                    getFaceMaterial(img, 28, 20, 8, 12)  // 后
                 ];
                 
-                // 手臂和腿的材质
-                const armMat = getFaceTexture(img, 40, 20, 4, 12);
-                const legMat = getFaceTexture(img, 4, 20, 4, 12);
+                // 手臂材质
+                const armMat = getFaceMaterial(img, 40, 20, 4, 12);
+                // 腿材质
+                const legMat = getFaceMaterial(img, 4, 20, 4, 12);
                 
-                if (meshes.head) meshes.head.material = headMaterials;
-                if (meshes.body) meshes.body.material = bodyMaterials;
-                if (meshes.armL) meshes.armL.material = armMat.clone();
-                if (meshes.armR) meshes.armR.material = armMat.clone();
-                if (meshes.legL) meshes.legL.material = legMat.clone();
-                if (meshes.legR) meshes.legR.material = legMat.clone();
+                meshes.head.material = headMats;
+                meshes.body.material = bodyMats;
+                meshes.armLeft.material = armMat.clone();
+                meshes.armRight.material = armMat.clone();
+                meshes.legLeft.material = legMat.clone();
+                meshes.legRight.material = legMat.clone();
                 
                 console.log('皮肤已应用（6面独立）');
             };
@@ -336,24 +279,20 @@
             img.src = imageUrl;
         }
         
-        // 默认加载 remember.png
+        // 加载默认皮肤
         applySkinToModel('remember.png');
         
-        // ========== 4. AI 生成皮肤的核心函数 ==========
+        // AI 生成皮肤
         async function generateSkin(prompt, style) {
             const loadingDiv = document.getElementById('loading');
             const generateBtn = document.getElementById('generateBtn');
-            
             loadingDiv.style.display = 'block';
             generateBtn.disabled = true;
-            
             try {
-                const fullPrompt = `Minecraft skin character, ${prompt}, ${style}, pixel art style, front view, game texture, 64x64 pixels, flat lighting`;
+                const fullPrompt = `Minecraft skin character, ${prompt}, ${style}, pixel art style, front view, 64x64 pixels`;
                 const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(fullPrompt)}?width=512&height=512&nologo=true`;
-                
                 const img = new Image();
                 img.crossOrigin = "Anonymous";
-                
                 await new Promise((resolve, reject) => {
                     img.onload = () => {
                         const canvas = document.createElement('canvas');
@@ -362,17 +301,15 @@
                         const ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0, 64, 64);
                         const skinDataUrl = canvas.toDataURL('image/png');
-                        
                         document.getElementById('skinImage').src = skinDataUrl;
                         document.getElementById('generatedSkin').style.display = 'block';
                         applySkinToModel(skinDataUrl);
                         saveToHistory(prompt, style, skinDataUrl);
                         resolve();
                     };
-                    img.onerror = () => reject(new Error('图片生成失败'));
+                    img.onerror = () => reject(new Error('生成失败'));
                     img.src = imageUrl;
                 });
-                
                 showMessage('✅ 皮肤生成成功！', 'success');
             } catch (error) {
                 showMessage('❌ 生成失败：' + error.message, 'error');
@@ -382,7 +319,7 @@
             }
         }
         
-        // ========== 5. 历史记录管理 ==========
+        // 历史记录功能
         function saveToHistory(prompt, style, imageDataUrl) {
             let history = localStorage.getItem('mc_skin_history');
             history = history ? JSON.parse(history) : [];
@@ -441,7 +378,6 @@
             setTimeout(() => { msgDiv.className = 'status-msg'; }, 3000);
         }
         
-        // ========== 6. 下载皮肤 ==========
         document.getElementById('downloadSkin').addEventListener('click', () => {
             const skinImg = document.getElementById('skinImage');
             if (skinImg.src) {
@@ -453,7 +389,6 @@
             }
         });
         
-        // ========== 7. 表单提交 ==========
         const form = document.getElementById('generateForm');
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -467,7 +402,6 @@
         });
         
         document.getElementById('clearHistory').addEventListener('click', clearHistory);
-        
         loadHistory();
         
         const resizeObserver = new ResizeObserver(() => {
