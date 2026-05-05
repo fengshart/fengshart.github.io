@@ -144,6 +144,14 @@
             display: block;
         }
         
+        .clear-btn {
+            background: #dc3545;
+            margin-top: 10px;
+        }
+        .clear-btn:hover {
+            background: #c82333;
+        }
+        
         @media (max-width: 768px) {
             .container { flex-direction: column; }
             .left-panel { width: 100%; }
@@ -178,6 +186,7 @@
                 <div id="demandList" style="font-size: 14px; max-height: 250px; overflow-y: auto;">
                     <p style="color: #999;">暂无提交记录</p>
                 </div>
+                <button id="clearDemands" class="clear-btn" style="margin-top: 10px;">🗑️ 清空记录</button>
             </div>
         </div>
 
@@ -186,7 +195,7 @@
             <h2>🖼️ Minecraft 皮肤展示</h2>
             <div class="skin-display">
                 <div class="skin-image">
-                    <img id="skinPreview" src="remember.png" alt="皮肤预览" onerror="this.src='https://via.placeholder.com/300x300?text=皮肤加载失败'">
+                    <img id="skinPreview" src="remember.png" alt="皮肤预览">
                 </div>
                 <div class="skin-info">
                     <strong id="skinName">remember.png</strong><br>
@@ -210,21 +219,38 @@
             console.log('页面加载完成');
             loadDemands();
             
-            // 设置默认皮肤文件名显示
-            const skinFileName = 'remember.png';
-            document.getElementById('skinName').textContent = skinFileName;
+            // 设置默认皮肤
+            var skinImg = document.getElementById('skinPreview');
+            var skinName = 'remember.png';
+            document.getElementById('skinName').textContent = skinName;
             
             // 检查默认皮肤是否加载成功
-            const skinImg = document.getElementById('skinPreview');
+            skinImg.onload = function() {
+                console.log('皮肤加载成功');
+            };
             skinImg.onerror = function() {
                 console.warn('默认皮肤加载失败，请确保 remember.png 文件存在');
-                document.getElementById('skinName').innerHTML = 'remember.png <span style="color:orange;">(文件未找到)</span>';
+                document.getElementById('skinName').innerHTML = 'remember.png <span style="color:orange;">⚠️ 文件未找到</span>';
+                // 显示一个占位图
+                skinImg.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="300" height="300" viewBox="0 0 300 300"%3E%3Crect width="300" height="300" fill="%232d2d44"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%23aaa"%3E皮肤图片%3C/text%3E%3Ctext x="50%25" y="60%25" text-anchor="middle" dy=".3em" fill="%23888" font-size="14"%3Eremember.png%3C/text%3E%3C/svg%3E';
             };
+            
+            // 清空记录按钮
+            var clearBtn = document.getElementById('clearDemands');
+            if (clearBtn) {
+                clearBtn.addEventListener('click', function() {
+                    if (confirm('确定要清空所有需求记录吗？')) {
+                        localStorage.removeItem('ai_demands');
+                        loadDemands();
+                        showMessage('✅ 已清空所有记录', 'success');
+                    }
+                });
+            }
         });
         
         // 显示消息
         function showMessage(text, type) {
-            const msgEl = document.getElementById('msg');
+            var msgEl = document.getElementById('msg');
             msgEl.textContent = text;
             msgEl.className = 'status-msg status-' + type;
             setTimeout(function() {
