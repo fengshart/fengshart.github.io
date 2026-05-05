@@ -2,377 +2,241 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>AI生图站 - 皮肤展示</title>
+    <title>3D Minecraft 皮肤展示</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: Arial, sans-serif; background: #f0f2f5; height: 100vh; }
-        
-        .container {
-            display: flex;
-            height: 100vh;
-            gap: 20px;
-            padding: 20px;
-        }
-        
-        .left-panel {
-            width: 380px;
-            background: white;
-            border-radius: 16px;
-            padding: 24px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            overflow-y: auto;
-        }
-        
-        .right-panel {
-            flex: 1;
-            background: white;
-            border-radius: 16px;
-            padding: 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .form-group { margin-bottom: 20px; }
-        label { display: block; font-weight: bold; margin-bottom: 8px; color: #333; }
-        textarea, select { 
-            width: 100%; 
-            padding: 10px; 
-            border: 1px solid #ddd; 
-            border-radius: 8px; 
-            font-size: 14px;
-            font-family: inherit;
-        }
-        button { 
-            background: #007bff; 
-            color: white; 
-            padding: 12px 24px; 
-            border: none; 
-            border-radius: 8px; 
-            cursor: pointer; 
-            font-size: 16px; 
-            width: 100%; 
-        }
-        button:hover { background: #0056b3; }
-        
-        .skin-display {
-            flex: 1;
+        body {
+            font-family: Arial, sans-serif;
             background: #1a1a2e;
-            border-radius: 16px;
+            min-height: 100vh;
             display: flex;
-            flex-direction: column;
-            align-items: center;
             justify-content: center;
+            align-items: center;
             padding: 20px;
-            min-height: 400px;
         }
         
-        .skin-image {
-            width: 300px;
-            height: 300px;
-            background: #2d2d44;
-            border-radius: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            margin-bottom: 20px;
-        }
-        
-        .skin-image img {
+        .card {
+            background: #16213e;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            max-width: 800px;
             width: 100%;
-            height: 100%;
-            object-fit: contain;
         }
         
-        .skin-info {
+        h1 {
             color: white;
             text-align: center;
+            margin-bottom: 10px;
         }
         
-        .status-msg {
-            margin-top: 16px;
+        .subtitle {
+            color: #aaa;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        
+        /* 3D画布容器 */
+        #canvas-container {
+            width: 100%;
+            height: 500px;
+            background: #0f0f1a;
+            border-radius: 16px;
+            overflow: hidden;
+            cursor: grab;
+        }
+        
+        #canvas-container:active {
+            cursor: grabbing;
+        }
+        
+        .info {
+            color: white;
+            text-align: center;
+            margin-top: 15px;
             padding: 10px;
+            background: rgba(255,255,255,0.1);
             border-radius: 8px;
-            display: none;
-        }
-        .status-success {
-            background: #d4edda;
-            color: #155724;
-            display: block;
-        }
-        .status-error {
-            background: #f8d7da;
-            color: #721c24;
-            display: block;
+            font-size: 14px;
         }
         
-        .demand-list {
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 1px solid #ddd;
-        }
-        
-        .demand-item {
-            padding: 12px;
-            border-bottom: 1px solid #eee;
-            margin-bottom: 8px;
-            background: #f9f9f9;
-            border-radius: 8px;
-        }
-        
-        .demand-item strong {
-            display: block;
-            margin-bottom: 5px;
-        }
-        
-        .demand-meta {
-            color: #666;
+        .controls {
+            color: #aaa;
+            text-align: center;
+            margin-top: 15px;
             font-size: 12px;
         }
         
         .upload-area {
             margin-top: 20px;
             padding: 15px;
-            background: #f0f2f5;
+            background: rgba(255,255,255,0.1);
             border-radius: 12px;
+            text-align: center;
         }
         
         .upload-area input {
             margin-top: 10px;
-            display: block;
+            color: white;
         }
         
-        .clear-btn {
-            background: #dc3545;
+        .status {
             margin-top: 10px;
-        }
-        .clear-btn:hover {
-            background: #c82333;
-        }
-        
-        @media (max-width: 768px) {
-            .container { flex-direction: column; }
-            .left-panel { width: 100%; }
+            color: #4caf50;
+            font-size: 12px;
+            text-align: center;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <!-- 左侧：提交需求 -->
-        <div class="left-panel">
-            <h2>🎨 提交生图需求</h2>
-            <form id="demandForm">
-                <div class="form-group">
-                    <label>关键词 / 画面描述</label>
-                    <textarea rows="4" placeholder="例如：一只穿着宇航服的猫，在火星上..." id="keywords" required></textarea>
-                </div>
-                <div class="form-group">
-                    <label>风格选项</label>
-                    <select id="style">
-                        <option>写实摄影</option>
-                        <option>二次元动漫</option>
-                        <option>水彩手绘</option>
-                        <option>赛博朋克</option>
-                    </select>
-                </div>
-                <button type="submit">📤 提交需求</button>
-            </form>
-            <div id="msg" class="status-msg"></div>
-            
-            <div class="demand-list">
-                <h3>📋 需求记录</h3>
-                <div id="demandList" style="font-size: 14px; max-height: 250px; overflow-y: auto;">
-                    <p style="color: #999;">暂无提交记录</p>
-                </div>
-                <button id="clearDemands" class="clear-btn" style="margin-top: 10px;">🗑️ 清空记录</button>
-            </div>
+    <div class="card">
+        <h1>🎮 Minecraft 3D 皮肤展示</h1>
+        <div class="subtitle">史蒂夫风格 · 可拖拽旋转/缩放</div>
+        
+        <!-- 3D画布放这里 -->
+        <div id="canvas-container"></div>
+        
+        <div class="info">
+            🖱️ 鼠标拖拽旋转视角 | 右键拖拽平移 | 滚轮缩放
         </div>
-
-        <!-- 右侧：皮肤展示 -->
-        <div class="right-panel">
-            <h2>🖼️ Minecraft 皮肤展示</h2>
-            <div class="skin-display">
-                <div class="skin-image">
-                    <img id="skinPreview" src="remember.png" alt="皮肤预览">
-                </div>
-                <div class="skin-info">
-                    <strong id="skinName">remember.png</strong><br>
-                    <small>当前显示的皮肤</small>
-                </div>
-            </div>
-            
-            <div class="upload-area">
-                <h3>🔼 切换皮肤</h3>
-                <input type="file" id="skinUpload" accept="image/png">
-                <p style="font-size: 12px; color: #666; margin-top: 8px;">
-                    💡 提示：将 PNG 皮肤文件放在同一目录下，或点击上传新皮肤
-                </p>
-            </div>
+        
+        <div class="upload-area">
+            <label style="color: white;">📤 上传你的皮肤 (PNG)</label>
+            <input type="file" id="skinUpload" accept="image/png">
+            <div id="status" class="status"></div>
+        </div>
+        
+        <div class="controls">
+            💡 当前皮肤: remember.png (放在同一目录下)
         </div>
     </div>
 
-    <script>
-        // 等待页面加载完成
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('页面加载完成');
-            loadDemands();
-            
-            // 设置默认皮肤
-            var skinImg = document.getElementById('skinPreview');
-            var skinName = 'remember.png';
-            document.getElementById('skinName').textContent = skinName;
-            
-            // 检查默认皮肤是否加载成功
-            skinImg.onload = function() {
-                console.log('皮肤加载成功');
-            };
-            skinImg.onerror = function() {
-                console.warn('默认皮肤加载失败，请确保 remember.png 文件存在');
-                document.getElementById('skinName').innerHTML = 'remember.png <span style="color:orange;">⚠️ 文件未找到</span>';
-                // 显示一个占位图
-                skinImg.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="300" height="300" viewBox="0 0 300 300"%3E%3Crect width="300" height="300" fill="%232d2d44"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%23aaa"%3E皮肤图片%3C/text%3E%3Ctext x="50%25" y="60%25" text-anchor="middle" dy=".3em" fill="%23888" font-size="14"%3Eremember.png%3C/text%3E%3C/svg%3E';
-            };
-            
-            // 清空记录按钮
-            var clearBtn = document.getElementById('clearDemands');
-            if (clearBtn) {
-                clearBtn.addEventListener('click', function() {
-                    if (confirm('确定要清空所有需求记录吗？')) {
-                        localStorage.removeItem('ai_demands');
-                        loadDemands();
-                        showMessage('✅ 已清空所有记录', 'success');
-                    }
-                });
+    <!-- 使用稳定的 CDN 版本 -->
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.128.0/build/three.module.js",
+                "skinview3d": "https://unpkg.com/skinview3d@3.0.1/dist/skinview3d.module.js"
             }
-        });
-        
-        // 显示消息
-        function showMessage(text, type) {
-            var msgEl = document.getElementById('msg');
-            msgEl.textContent = text;
-            msgEl.className = 'status-msg status-' + type;
-            setTimeout(function() {
-                msgEl.className = 'status-msg';
-            }, 3000);
         }
+    </script>
+
+    <script type="module">
+        // 导入需要的模块
+        import { SkinViewer, WalkingAnimation } from 'skinview3d';
         
-        // 保存需求
-        function saveDemand(keywords, style) {
-            var demands = localStorage.getItem('ai_demands');
-            if (demands) {
-                demands = JSON.parse(demands);
-            } else {
-                demands = [];
-            }
-            
-            var newDemand = {
-                id: Date.now(),
-                keywords: keywords,
-                style: style,
-                time: new Date().toLocaleString()
-            };
-            demands.unshift(newDemand);
-            
-            // 只保留最近20条
-            if (demands.length > 20) {
-                demands.pop();
-            }
-            
-            localStorage.setItem('ai_demands', JSON.stringify(demands));
-            return demands;
-        }
+        let skinViewer = null;
+        const container = document.getElementById('canvas-container');
         
-        // 显示需求列表
-        function loadDemands() {
-            var demands = localStorage.getItem('ai_demands');
-            var container = document.getElementById('demandList');
+        // 皮肤文件（放在同一目录下的 remember.png）
+        const skinUrl = 'remember.png';
+        
+        // 创建3D皮肤查看器
+        function initSkinViewer() {
+            if (!container) return;
             
-            if (!demands || demands === '[]') {
-                container.innerHTML = '<p style="color: #999;">暂无提交记录</p>';
-                return;
-            }
+            // 清空容器
+            container.innerHTML = '';
             
-            demands = JSON.parse(demands);
-            var html = '';
-            for (var i = 0; i < demands.length; i++) {
-                var d = demands[i];
-                var shortKeywords = d.keywords.substring(0, 60);
-                if (d.keywords.length > 60) {
-                    shortKeywords += '...';
+            // 创建 SkinViewer 实例
+            skinViewer = new SkinViewer({
+                canvas: document.createElement('canvas'),
+                width: container.clientWidth,
+                height: container.clientHeight,
+                skin: skinUrl,
+                background: '#0f0f1a',
+                zoom: 0.9,
+                orbitControls: true  // 启用鼠标控制
+            });
+            
+            // 把 canvas 添加到容器
+            container.appendChild(skinViewer.canvas);
+            
+            // 添加行走动画
+            const walkAnimation = new WalkingAnimation(skinViewer);
+            walkAnimation.speed = 0.5;
+            walkAnimation.start();
+            
+            // 设置相机位置
+            skinViewer.zoom = 0.9;
+            skinViewer.rotationX = 0.2;
+            skinViewer.rotationY = 0.5;
+            
+            // 渲染
+            skinViewer.render();
+            
+            // 监听窗口大小变化，自适应
+            window.addEventListener('resize', () => {
+                if (skinViewer && container) {
+                    const rect = container.getBoundingClientRect();
+                    skinViewer.width = rect.width;
+                    skinViewer.height = rect.height;
+                    skinViewer.render();
                 }
-                html += '<div class="demand-item">';
-                html += '<strong>📝 ' + escapeHtml(shortKeywords) + '</strong>';
-                html += '<div class="demand-meta">🎭 ' + escapeHtml(d.style) + ' | 🕐 ' + escapeHtml(d.time) + '</div>';
-                html += '</div>';
-            }
-            container.innerHTML = html;
+            });
+            
+            // 皮肤加载成功的回调
+            skinViewer.playerObject.then(() => {
+                console.log('✅ 皮肤加载成功:', skinUrl);
+                const statusDiv = document.getElementById('status');
+                if (statusDiv) {
+                    statusDiv.innerHTML = '✅ 皮肤加载成功！';
+                    statusDiv.style.color = '#4caf50';
+                }
+            }).catch((err) => {
+                console.error('❌ 皮肤加载失败:', err);
+                const statusDiv = document.getElementById('status');
+                if (statusDiv) {
+                    statusDiv.innerHTML = '⚠️ 皮肤文件未找到，请确保 remember.png 在同一目录下';
+                    statusDiv.style.color = '#ff9800';
+                }
+            });
+            
+            return skinViewer;
         }
         
-        // 防止XSS
-        function escapeHtml(text) {
-            var div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-        
-        // 上传皮肤
+        // 上传自定义皮肤
         function setupUpload() {
-            var uploadInput = document.getElementById('skinUpload');
+            const uploadInput = document.getElementById('skinUpload');
             if (!uploadInput) return;
             
-            uploadInput.addEventListener('change', function(e) {
-                var file = e.target.files[0];
+            uploadInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
                 if (!file) return;
                 
                 if (!file.type.match('image/png')) {
-                    showMessage('请上传 PNG 格式的皮肤文件', 'error');
+                    const statusDiv = document.getElementById('status');
+                    statusDiv.innerHTML = '❌ 请上传 PNG 格式的皮肤文件';
+                    statusDiv.style.color = '#f44336';
                     return;
                 }
                 
-                var reader = new FileReader();
-                reader.onload = function(evt) {
-                    var skinImg = document.getElementById('skinPreview');
-                    skinImg.src = evt.target.result;
-                    document.getElementById('skinName').textContent = file.name;
-                    showMessage('✅ 皮肤加载成功！', 'success');
+                const reader = new FileReader();
+                reader.onload = (evt) => {
+                    const customSkinUrl = evt.target.result;
+                    if (skinViewer) {
+                        skinViewer.skin = customSkinUrl;
+                        const statusDiv = document.getElementById('status');
+                        statusDiv.innerHTML = '✅ 自定义皮肤加载成功！';
+                        statusDiv.style.color = '#4caf50';
+                    }
                 };
-                reader.onerror = function() {
-                    showMessage('❌ 皮肤加载失败', 'error');
+                reader.onerror = () => {
+                    const statusDiv = document.getElementById('status');
+                    statusDiv.innerHTML = '❌ 皮肤加载失败';
+                    statusDiv.style.color = '#f44336';
                 };
                 reader.readAsDataURL(file);
             });
         }
         
-        // 表单提交
-        function setupForm() {
-            var form = document.getElementById('demandForm');
-            if (!form) return;
-            
-            form.addEventListener('submit', function(e) {
-                e.preventDefault();
-                
-                var keywords = document.getElementById('keywords').value.trim();
-                var style = document.getElementById('style').value;
-                
-                if (!keywords) {
-                    showMessage('请填写画面描述', 'error');
-                    return;
-                }
-                
-                saveDemand(keywords, style);
-                showMessage('✅ 需求已提交！风格：' + style, 'success');
-                document.getElementById('keywords').value = '';
-                loadDemands();
-                
-                // 打印到控制台供管理员查看
-                console.log('新需求：', { keywords: keywords, style: style, time: new Date().toISOString() });
-            });
-        }
+        // 等待容器尺寸确定后初始化
+        setTimeout(() => {
+            initSkinViewer();
+        }, 100);
         
-        // 初始化
-        setupForm();
+        // 设置上传功能
         setupUpload();
     </script>
 </body>
