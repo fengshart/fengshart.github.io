@@ -94,10 +94,9 @@
         const container = document.getElementById('canvas-container');
         const scene = new THREE.Scene();
         scene.background = new THREE.Color(0x1a1a2e);
-        scene.fog = new THREE.FogExp2(0x1a1a2e, 0.008);
         
         const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
-        camera.position.set(4, 2, 5);
+        camera.position.set(4, 1.5, 5);
         camera.lookAt(0, 0.4, 0);
         
         const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -119,9 +118,12 @@
         const backLight = new THREE.DirectionalLight(0x88aaff, 0.5);
         backLight.position.set(-3, 2, -4);
         scene.add(backLight);
+        const fillLight = new THREE.PointLight(0xaa8866, 0.3);
+        fillLight.position.set(0, 1, 0);
+        scene.add(fillLight);
         
         // 网格地面（脚底贴合 Y = -1.2）
-        const gridHelper = new THREE.GridHelper(10, 20, 0x88aaff, 0x335588);
+        const gridHelper = new THREE.GridHelper(8, 16, 0x88aaff, 0x335588);
         gridHelper.position.y = -1.2;
         scene.add(gridHelper);
         
@@ -133,89 +135,74 @@
             return new THREE.MeshStandardMaterial({ color: 0x88aaff });
         }
         
-        // ----- 头：轴心在底部（脖子），位置 Y=1.2 -----
+        // ----- 头：高0.8，范围 Y: 1.2 ~ 2.0，中心 Y = 1.6 -----
         const headGeo = new THREE.BoxGeometry(0.8, 0.8, 0.8);
         const head = new THREE.Mesh(headGeo, [
             createTempMat(), createTempMat(), createTempMat(),
             createTempMat(), createTempMat(), createTempMat()
         ]);
-        head.position.set(0, 1.2, 0);  // 底部放在 Y=1.2
+        head.position.set(0, 1.6, 0);
         head.castShadow = true;
         group.add(head);
         meshes.head = head;
         
-        // ----- 身体：轴心在底部（腰部），位置 Y=0 -----
+        // ----- 身体：高1.2，范围 Y: 0 ~ 1.2，中心 Y = 0.6 -----
         const bodyGeo = new THREE.BoxGeometry(0.8, 1.2, 0.4);
         const body = new THREE.Mesh(bodyGeo, [
             createTempMat(), createTempMat(), createTempMat(),
             createTempMat(), createTempMat(), createTempMat()
         ]);
-        body.position.set(0, 0, 0);  // 底部放在 Y=0
+        body.position.set(0, 0.6, 0);
         body.castShadow = true;
         group.add(body);
         meshes.body = body;
         
-        // ----- 手臂：轴心在底部（肩膀），位置 Y=0 -----
+        // ----- 左臂：高1.2，范围 Y: 0 ~ 1.2，中心 Y = 0.6，贴紧身体 -----
         const armGeo = new THREE.BoxGeometry(0.4, 1.2, 0.4);
-        
         const armLeft = new THREE.Mesh(armGeo, createTempMat());
-        armLeft.position.set(-0.6, 0, 0);  // 底部放在 Y=0，从肩膀下垂
+        armLeft.position.set(-0.6, 0.6, 0);
         armLeft.castShadow = true;
         group.add(armLeft);
         meshes.armLeft = armLeft;
         
+        // ----- 右臂 -----
         const armRight = new THREE.Mesh(armGeo, createTempMat());
-        armRight.position.set(0.6, 0, 0);  // 底部放在 Y=0
+        armRight.position.set(0.6, 0.6, 0);
         armRight.castShadow = true;
         group.add(armRight);
         meshes.armRight = armRight;
         
-        // ----- 腿：轴心在顶部（大腿根部），位置 Y=-1.2（底部）但旋转轴在顶部-----
-        // 为了让腿绕顶部旋转，将物体放在底部位置，旋转轴在顶部需要特殊处理
-        // 使用 Group 包装来实现顶部轴心旋转
-        const legGeo2 = new THREE.BoxGeometry(0.4, 1.2, 0.4);
+        // ----- 左腿：高1.2，范围 Y: -1.2 ~ 0，中心 Y = -0.6 -----
+        const legGeo = new THREE.BoxGeometry(0.4, 1.2, 0.4);
+        const legLeft = new THREE.Mesh(legGeo, createTempMat());
+        legLeft.position.set(-0.225, -0.6, 0);
+        legLeft.castShadow = true;
+        group.add(legLeft);
+        meshes.legLeft = legLeft;
         
-        // 左腿：用 Group 包装，让旋转轴心在顶部
-        const legLeftGroup = new THREE.Group();
-        const legLeftMesh = new THREE.Mesh(legGeo2, createTempMat());
-        legLeftMesh.position.set(0, 0.6, 0);  // 让 mesh 的中心相对于 Group 在 Y=0.6
-        legLeftGroup.add(legLeftMesh);
-        legLeftGroup.position.set(-0.225, -1.2, 0);  // Group 底部在 Y=-1.2
-        legLeftGroup.castShadow = true;
-        group.add(legLeftGroup);
-        meshes.legLeft = legLeftGroup;
-        
-        // 右腿
-        const legRightGroup = new THREE.Group();
-        const legRightMesh = new THREE.Mesh(legGeo2, createTempMat());
-        legRightMesh.position.set(0, 0.6, 0);
-        legRightGroup.add(legRightMesh);
-        legRightGroup.position.set(0.225, -1.2, 0);
-        legRightGroup.castShadow = true;
-        group.add(legRightGroup);
-        meshes.legRight = legRightGroup;
-        
-        // 保存腿的材质以便后续更新
-        meshes.legLeftMesh = legLeftMesh;
-        meshes.legRightMesh = legRightMesh;
+        // ----- 右腿 -----
+        const legRight = new THREE.Mesh(legGeo, createTempMat());
+        legRight.position.set(0.225, -0.6, 0);
+        legRight.castShadow = true;
+        group.add(legRight);
+        meshes.legRight = legRight;
         
         scene.add(group);
         
-        // ========== 单摆动画（绕顶部轴心旋转）==========
+        // ========== 单摆动画 ==========
         let time = 0;
         function animate() {
             requestAnimationFrame(animate);
             time += 0.02;
             
             if (meshes.armLeft && meshes.armRight && meshes.legLeft && meshes.legRight) {
-                // 手臂：绕底部旋转（底部 = 肩膀位置）
-                // 角度 ±30° (0.523 弧度)
+                // 手臂：绕肩膀旋转 ±30°（肩膀位置在 Y=1.2，物体中心在 Y=0.6）
+                // 由于物体中心不在肩膀，需要调整旋转效果，这里简化处理
                 const armSwing = Math.sin(time) * 0.523;
                 meshes.armLeft.rotation.x = armSwing;
                 meshes.armRight.rotation.x = -armSwing;
                 
-                // 腿：绕顶部旋转（大腿根部 = Group 的顶部）
-                // 角度 ±20° (0.35 弧度)，与手臂反向
+                // 腿：绕大腿根部旋转 ±20°，与手臂反向
                 const legSwing = Math.sin(time) * 0.35;
                 meshes.legLeft.rotation.x = -legSwing;
                 meshes.legRight.rotation.x = legSwing;
@@ -234,7 +221,7 @@
             renderer.setSize(width, height);
         });
         
-        // ========== 皮肤纹理裁切函数 ==========
+        // ========== 皮肤纹理裁切 ==========
         function getFaceMaterial(img, x, y, w, h) {
             const canvas = document.createElement('canvas');
             canvas.width = w;
@@ -246,7 +233,6 @@
             return new THREE.MeshStandardMaterial({ map: texture });
         }
         
-        // 应用皮肤到模型
         function applySkinToModel(imageUrl) {
             const img = new Image();
             img.crossOrigin = "Anonymous";
@@ -278,8 +264,8 @@
                 meshes.body.material = bodyMats;
                 meshes.armLeft.material = armMat.clone();
                 meshes.armRight.material = armMat.clone();
-                if (meshes.legLeftMesh) meshes.legLeftMesh.material = legMat.clone();
-                if (meshes.legRightMesh) meshes.legRightMesh.material = legMat.clone();
+                meshes.legLeft.material = legMat.clone();
+                meshes.legRight.material = legMat.clone();
                 
                 console.log('皮肤已应用');
             };
