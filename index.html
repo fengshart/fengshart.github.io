@@ -88,19 +88,14 @@
         </div>
     </div>
 
-<script src="https://cdn.jsdelivr.net/npm/three@0.156.0/build/three.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/skinview3d@3.0.1/bundle/skinview3d.bundle.min.js"></script>
+<script src="https://unpkg.com/three@0.154.0/dist/three.min.js"></script>
+<script src="https://unpkg.com/skinview3d@3.0.1/dist/skinview3d.min.js"></script>
 <script>
-const viewer = new skinview3d.SkinViewer({
-    canvas: document.getElementById("skin-canvas"),
-    skin: "https://raw.githubusercontent.com/fengshart/fengshart.github.io/main/remember.png"
-});
-
-document.getElementById('demandForm').addEventListener('submit', function(e){
-    e.preventDefault();
-    document.getElementById('msg').innerText = '✅ 需求已提交';
-    this.reset();
-    setTimeout(()=>msg.innerText='',3000);
+document.addEventListener("DOMContentloaded",function(){
+    const viewer = new skinview3d.SkinViewer({
+        canvas: = document.getElementById("skin-canvas")
+        skin: "remember.png"
+    });
 });
 </script>
 </body>
