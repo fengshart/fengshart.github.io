@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>AI生图站 - 左右分栏</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #f0f2f5; height: 100vh; }
+        
+        /* 左右分栏容器 */
+        .container {
+            display: flex;
+            height: 100vh;
+            gap: 20px;
+            padding: 20px;
+        }
+        
+        /* 左侧：提交需求区 */
+        .left-panel {
+            width: 380px;
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow-y: auto;
+        }
+        
+        /* 右侧：图库展示区 */
+        .right-panel {
+            flex: 1;
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow-y: auto;
+        }
+        
+        /* 表单样式 */
+        .form-group { margin-bottom: 20px; }
+        label { display: block; font-weight: bold; margin-bottom: 8px; color: #333; }
+        textarea, select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; }
+        button { background: #007bff; color: white; padding: 12px 24px; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; width: 100%; }
+        
+        /* 图库网格 */
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 16px;
+        }
+        .card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: transform 0.2s;
+        }
+        .card:hover { transform: translateY(-4px); }
+        .card img { width: 100%; height: 160px; object-fit: cover; }
+        .card .info { padding: 12px; }
+        .download-btn { display: inline-block; margin-top: 8px; color: #007bff; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 左侧区域：提交需求 -->
+        <div class="left-panel">
+            <h2>🎨 提交生图需求</h2>
+            <form id="demandForm">
+                <div class="form-group">
+                    <label>关键词 / 画面描述</label>
+                    <textarea rows="4" placeholder="例如：一只穿着宇航服的猫，在火星上..." id="keywords" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label>风格选项</label>
+                    <select id="style">
+                        <option>写实摄影</option>
+                        <option>二次元动漫</option>
+                        <option>水彩手绘</option>
+                        <option>赛博朋克</option>
+                    </select>
+                </div>
+                <button type="submit">📤 提交需求</button>
+            </form>
+            <div id="msg" style="margin-top: 16px; color: green; font-size: 14px;"></div>
+        </div>
+
+        <!-- 右侧区域：图库展示 -->
+        <div class="right-panel">
+            <h2>🖼️ AI作品集</h2>
+            <div class="gallery" id="gallery">
+                <p>加载中...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 模拟图库数据
+        const images = [
+            { url: "https://picsum.photos/id/1/300/200", name: "山水风景" },
+            { url: "https://picsum.photos/id/2/300/200", name: "城市夜景" }
+        ];
+
+        function renderGallery() {
+            const container = document.getElementById('gallery');
+            if(images.length === 0) {
+                container.innerHTML = '<p>暂无图片，请等待管理员生成</p>';
+                return;
+            }
+            container.innerHTML = images.map(img => `
+                <div class="card">
+                    <img src="${img.url}" alt="${img.name}">
+                    <div class="info">
+                        <strong>${img.name}</strong><br>
+                        <a href="${img.url}" download class="download-btn">⬇️ 下载</a>
+                    </div>
+                </div>
+            `).join('');
+        }
+        renderGallery();
+
+        // 处理提交
+        document.getElementById('demandForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const keywords = document.getElementById('keywords').value;
+            const style = document.getElementById('style').value;
+            console.log('提交需求：', { keywords, style });
+            document.getElementById('msg').innerText = '✅ 需求已提交，管理员会尽快处理';
+            e.target.reset();
+            setTimeout(() => document.getElementById('msg').innerText = '', 3000);
+        });
+    </script>
+</body>
+</html>
