@@ -7,7 +7,6 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: Arial, sans-serif; background: #f0f2f5; height: 100vh; }
         
-        /* 左右分栏容器 */
         .container {
             display: flex;
             height: 100vh;
@@ -15,7 +14,6 @@
             padding: 20px;
         }
         
-        /* 左侧：提交需求区 */
         .left-panel {
             width: 380px;
             background: white;
@@ -25,7 +23,6 @@
             overflow-y: auto;
         }
         
-        /* 右侧：图库展示区 */
         .right-panel {
             flex: 1;
             background: white;
@@ -35,13 +32,11 @@
             overflow-y: auto;
         }
         
-        /* 表单样式 */
         .form-group { margin-bottom: 20px; }
         label { display: block; font-weight: bold; margin-bottom: 8px; color: #333; }
         textarea, select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; }
         button { background: #007bff; color: white; padding: 12px 24px; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; width: 100%; }
         
-        /* 图库网格 */
         .gallery {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -61,7 +56,6 @@
 </head>
 <body>
     <div class="container">
-        <!-- 左侧区域：提交需求 -->
         <div class="left-panel">
             <h2>🎨 提交生图需求</h2>
             <form id="demandForm">
@@ -83,72 +77,31 @@
             <div id="msg" style="margin-top: 16px; color: green; font-size: 14px;"></div>
         </div>
 
-        <!-- 右侧区域：图库展示 -->
         <div class="right-panel">
-            <h2>🖼️ 预览</h2>
-            <div style="max-width: 380px; margin: 0 auto; width: 100%;">
-                <div class="bg-gray-800 rounded-lg overflow-hidden w-full">
-                    <div class="bg-green-50 relative aspect-square">
-                        <canvas id="skin-canvas" class="absolute inset-0 w-full h-full" width="348" height="348" style="display: block; touch-action: none; width: 348px; height: 348px;" data-engine="three.js r156"></canvas>
-                        <div class="absolute top-4 right-4 flex gap-2">
-                            <button class="bg-black/30 hover:bg-black/50 text-white p-2 rounded-full transition-colors" title="Enter fullscreen">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M15 3h6v6"></path>
-                                    <path d="m21 3-7 7"></path>
-                                    <path d="m3 21 7-7"></path>
-                                    <path d="M9 21H3v-6"></path>
-                                </svg>
-                            </button>
-                        </div>
-                        <div class="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/30 text-white px-3 py-1 rounded-full text-sm">Drag to rotate • Scroll to zoom</div>
-                    </div>
+            <h2>🖼️ AI作品集</h2>
+            <div class="gallery" id="gallery">
+                <div class="card">
+                    <canvas id="skin-canvas" width="348" height="348" style="width:100%;height:300px;"></canvas>
+                    <div class="info">我的世界皮肤</div>
                 </div>
             </div>
         </div>
+    </div>
 
-    <script>
-    // 只保留1个皮肤展示，无多余内容
-    function renderGallery() {
-        const container = document.getElementById('gallery');
-        container.innerHTML = `
-        <div class="card" style="width: 348px; margin: 0 auto;">
-            <div class="bg-green-50 relative aspect-square">
-                <canvas id="skin-canvas" class="absolute inset-0 w-full h-full" width="348" height="348"></canvas>
-                <div class="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/30 text-white px-3 py-1 rounded-full text-sm">Drag to rotate • Scroll to zoom</div>
-            </div>
-            <div class="info">
-                <strong>我的世界皮肤</strong><br>
-                <a href="remember!.png" download class="download-btn">⬇️ 下载皮肤</a>
-            </div>
-        </div>
-        `；
-    }
-    renderGallery();
-        
-    // 加载3D皮肤
-    window.onload = () => {
-        const viewer = new skinview3d.SkinViewer({
-            canvas: document.getElementById("skin-canvas"),
-            width: 348,
-            height: 348,
-            skin: "https://raw.githubusercontent.com/bs-community/skinview3d/master/examples/skin.png"
-         });
-     };
+<script src="https://cdn.jsdelivr.net/npm/three@0.156.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/skinview3d@3.0.1/bundle/skinview3d.bundle.min.js"></script>
+<script>
+const viewer = new skinview3d.SkinViewer({
+    canvas: document.getElementById("skin-canvas"),
+    skin: "https://raw.githubusercontent.com/bs-community/skinview3d/master/examples/skin.png"
+});
 
-    // 处理提交（完全保留你原来的功能）
-    document.getElementById('demandForm').addEventListener('submit', (e) => {
-        e.preventDefault();
-        const keywords = document.getElementById('keywords').value;
-        const style = document.getElementById('style').value;
-        console.log('提交需求：', { keywords, style });
-        document.getElementById('msg').innerText = '✅ 需求已提交，管理员会尽快处理';
-        e.target.reset();
-        setTimeout(() => document.getElementById('msg').innerText = '', 3000);
-     });
-    </script>
-
-   <!-- 必须加的2个依赖（只加这两行） -->
-    <script src="https://cdn.jsdelivr.net/npm/three@0.156.0/build/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/skinview3d@3.0.1/bundle/skinview3d.bundle.min.js"></script>
+document.getElementById('demandForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    document.getElementById('msg').innerText = '✅ 需求已提交';
+    this.reset();
+    setTimeout(()=>msg.innerText='',3000);
+});
+</script>
 </body>
 </html>
