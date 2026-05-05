@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>AI Minecraft 皮肤生成器</title>
+    <title>AI Minecraft 皮肤生成器 - 双层皮肤</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: Arial, sans-serif; background: #f0f2f5; min-height: 100vh; padding: 20px; }
@@ -122,7 +122,7 @@
         fillLight.position.set(0, 1, 0);
         scene.add(fillLight);
         
-        // 网格地面（脚底贴合 Y = -1.2）
+        // 网格地面
         const gridHelper = new THREE.GridHelper(8, 16, 0x88aaff, 0x335588);
         gridHelper.position.y = -1.2;
         scene.add(gridHelper);
@@ -135,7 +135,11 @@
             return new THREE.MeshStandardMaterial({ color: 0x88aaff });
         }
         
-        // ----- 头：高0.8，范围 Y: 1.2 ~ 2.0，中心 Y = 1.6 -----
+        function createTransparentMat() {
+            return new THREE.MeshStandardMaterial({ color: 0xffffff, transparent: true, alphaTest: 0.1 });
+        }
+        
+        // ----- 头 -----
         const headGeo = new THREE.BoxGeometry(0.8, 0.8, 0.8);
         const head = new THREE.Mesh(headGeo, [
             createTempMat(), createTempMat(), createTempMat(),
@@ -146,7 +150,18 @@
         group.add(head);
         meshes.head = head;
         
-        // ----- 身体：高1.2，范围 Y: 0 ~ 1.2，中心 Y = 0.6 -----
+        // ----- 头外层（帽子）-----
+        const headOuterGeo = new THREE.BoxGeometry(0.85, 0.85, 0.85);
+        const headOuter = new THREE.Mesh(headOuterGeo, [
+            createTransparentMat(), createTransparentMat(), createTransparentMat(),
+            createTransparentMat(), createTransparentMat(), createTransparentMat()
+        ]);
+        headOuter.position.set(0, 1.6, 0);
+        headOuter.castShadow = true;
+        group.add(headOuter);
+        meshes.headOuter = headOuter;
+        
+        // ----- 身体 -----
         const bodyGeo = new THREE.BoxGeometry(0.8, 1.2, 0.4);
         const body = new THREE.Mesh(bodyGeo, [
             createTempMat(), createTempMat(), createTempMat(),
@@ -157,10 +172,20 @@
         group.add(body);
         meshes.body = body;
         
-        // ----- 手臂几何体 -----
+        // ----- 身体外层（外套）-----
+        const bodyOuterGeo = new THREE.BoxGeometry(0.85, 1.25, 0.45);
+        const bodyOuter = new THREE.Mesh(bodyOuterGeo, [
+            createTransparentMat(), createTransparentMat(), createTransparentMat(),
+            createTransparentMat(), createTransparentMat(), createTransparentMat()
+        ]);
+        bodyOuter.position.set(0, 0.6, 0);
+        bodyOuter.castShadow = true;
+        group.add(bodyOuter);
+        meshes.bodyOuter = bodyOuter;
+        
+        // ----- 手臂 -----
         const armGeo = new THREE.BoxGeometry(0.4, 1.2, 0.4);
         
-        // 左臂：用 Group 包装，轴心在肩膀 (Y=1.2)
         const armLeftGroup = new THREE.Group();
         const armLeftMesh = new THREE.Mesh(armGeo, createTempMat());
         armLeftMesh.position.set(0, -0.6, 0);
@@ -171,7 +196,17 @@
         meshes.armLeft = armLeftGroup;
         meshes.armLeftMesh = armLeftMesh;
         
-        // 右臂：用 Group 包装，轴心在肩膀 (Y=1.2)
+        // 左臂外层（袖子）
+        const armLeftOuterGroup = new THREE.Group();
+        const armLeftOuterMesh = new THREE.Mesh(armGeo, createTransparentMat());
+        armLeftOuterMesh.position.set(0, -0.6, 0);
+        armLeftOuterGroup.add(armLeftOuterMesh);
+        armLeftOuterGroup.position.set(-0.6, 1.2, 0);
+        armLeftOuterGroup.castShadow = true;
+        group.add(armLeftOuterGroup);
+        meshes.armLeftOuter = armLeftOuterGroup;
+        meshes.armLeftOuterMesh = armLeftOuterMesh;
+        
         const armRightGroup = new THREE.Group();
         const armRightMesh = new THREE.Mesh(armGeo, createTempMat());
         armRightMesh.position.set(0, -0.6, 0);
@@ -182,10 +217,20 @@
         meshes.armRight = armRightGroup;
         meshes.armRightMesh = armRightMesh;
         
-        // ----- 腿几何体 -----
+        // 右臂外层（袖子）
+        const armRightOuterGroup = new THREE.Group();
+        const armRightOuterMesh = new THREE.Mesh(armGeo, createTransparentMat());
+        armRightOuterMesh.position.set(0, -0.6, 0);
+        armRightOuterGroup.add(armRightOuterMesh);
+        armRightOuterGroup.position.set(0.6, 1.2, 0);
+        armRightOuterGroup.castShadow = true;
+        group.add(armRightOuterGroup);
+        meshes.armRightOuter = armRightOuterGroup;
+        meshes.armRightOuterMesh = armRightOuterMesh;
+        
+        // ----- 腿 -----
         const legGeo = new THREE.BoxGeometry(0.4, 1.2, 0.4);
         
-        // 左腿：用 Group 包装，轴心在大腿根 (Y=0)
         const legLeftGroup = new THREE.Group();
         const legLeftMesh = new THREE.Mesh(legGeo, createTempMat());
         legLeftMesh.position.set(0, -0.6, 0);
@@ -196,7 +241,17 @@
         meshes.legLeft = legLeftGroup;
         meshes.legLeftMesh = legLeftMesh;
         
-        // 右腿：用 Group 包装，轴心在大腿根 (Y=0)
+        // 左腿外层（裤腿）
+        const legLeftOuterGroup = new THREE.Group();
+        const legLeftOuterMesh = new THREE.Mesh(legGeo, createTransparentMat());
+        legLeftOuterMesh.position.set(0, -0.6, 0);
+        legLeftOuterGroup.add(legLeftOuterMesh);
+        legLeftOuterGroup.position.set(-0.2, 0, 0);
+        legLeftOuterGroup.castShadow = true;
+        group.add(legLeftOuterGroup);
+        meshes.legLeftOuter = legLeftOuterGroup;
+        meshes.legLeftOuterMesh = legLeftOuterMesh;
+        
         const legRightGroup = new THREE.Group();
         const legRightMesh = new THREE.Mesh(legGeo, createTempMat());
         legRightMesh.position.set(0, -0.6, 0);
@@ -207,25 +262,35 @@
         meshes.legRight = legRightGroup;
         meshes.legRightMesh = legRightMesh;
         
+        // 右腿外层（裤腿）
+        const legRightOuterGroup = new THREE.Group();
+        const legRightOuterMesh = new THREE.Mesh(legGeo, createTransparentMat());
+        legRightOuterMesh.position.set(0, -0.6, 0);
+        legRightOuterGroup.add(legRightOuterMesh);
+        legRightOuterGroup.position.set(0.2, 0, 0);
+        legRightOuterGroup.castShadow = true;
+        group.add(legRightOuterGroup);
+        meshes.legRightOuter = legRightOuterGroup;
+        meshes.legRightOuterMesh = legRightOuterMesh;
+        
         scene.add(group);
         
-        // ========== 单摆动画（异侧摆动：左臂+右腿同时向前）==========
+        // ========== 动画 ==========
         let time = 0;
         function animate() {
             requestAnimationFrame(animate);
             time += 0.02;
-            
-            // 计算摆动值
             const t = Math.sin(time);
-            
-            // 手臂：左臂向前时正转，右臂向后反转
+            // 手臂（内层+外层一起旋转）
             meshes.armLeft.rotation.x = t * 0.523;
             meshes.armRight.rotation.x = -t * 0.523;
-            
-            // 腿：左腿向后，右腿向前（左臂+右腿同时向前）
+            meshes.armLeftOuter.rotation.x = t * 0.523;
+            meshes.armRightOuter.rotation.x = -t * 0.523;
+            // 腿
             meshes.legLeft.rotation.x = -t * 0.4;
             meshes.legRight.rotation.x = t * 0.4;
-            
+            meshes.legLeftOuter.rotation.x = -t * 0.4;
+            meshes.legRightOuter.rotation.x = t * 0.4;
             controls.update();
             renderer.render(scene, camera);
         }
@@ -239,8 +304,8 @@
             renderer.setSize(width, height);
         });
         
-        // ========== 皮肤纹理裁切 ==========
-        function getFaceMaterial(img, x, y, w, h) {
+        // ========== 皮肤纹理裁切（双层）==========
+        function getFaceMaterial(img, x, y, w, h, isOuter = false) {
             const canvas = document.createElement('canvas');
             canvas.width = w;
             canvas.height = h;
@@ -248,6 +313,9 @@
             ctx.drawImage(img, x, y, w, h, 0, 0, w, h);
             const texture = new THREE.CanvasTexture(canvas);
             texture.magFilter = THREE.NearestFilter;
+            if (isOuter) {
+                return new THREE.MeshStandardMaterial({ map: texture, transparent: true, alphaTest: 0.1 });
+            }
             return new THREE.MeshStandardMaterial({ map: texture });
         }
         
@@ -255,6 +323,7 @@
             const img = new Image();
             img.crossOrigin = "Anonymous";
             img.onload = () => {
+                // ========== 内层 (Base Layer, y=0~32) ==========
                 // 头部 6 面
                 const headMats = [
                     getFaceMaterial(img, 0, 8, 8, 8),   // 右
@@ -278,6 +347,31 @@
                 // 腿材质
                 const legMat = getFaceMaterial(img, 4, 20, 4, 12);
                 
+                // ========== 外层 (Second Layer, y=32~64) ==========
+                // 帽子 6 面
+                const hatMats = [
+                    getFaceMaterial(img, 0, 40, 8, 8, true),   // 右
+                    getFaceMaterial(img, 16, 40, 8, 8, true),  // 左
+                    getFaceMaterial(img, 8, 32, 8, 8, true),   // 上
+                    getFaceMaterial(img, 16, 32, 8, 8, true),  // 下
+                    getFaceMaterial(img, 8, 40, 8, 8, true),   // 前
+                    getFaceMaterial(img, 24, 40, 8, 8, true)   // 后
+                ];
+                // 外套 6 面
+                const jacketMats = [
+                    getFaceMaterial(img, 24, 52, 4, 12, true),  // 右
+                    getFaceMaterial(img, 16, 52, 4, 12, true), // 左
+                    getFaceMaterial(img, 20, 48, 8, 4, true),  // 上
+                    getFaceMaterial(img, 20, 64, 8, 4, true),  // 下
+                    getFaceMaterial(img, 20, 52, 8, 12, true), // 前
+                    getFaceMaterial(img, 28, 52, 8, 12, true)  // 后
+                ];
+                // 袖子外层
+                const sleeveMat = getFaceMaterial(img, 40, 52, 4, 12, true);
+                // 裤腿外层
+                const pantMat = getFaceMaterial(img, 4, 52, 4, 12, true);
+                
+                // 应用内层材质
                 meshes.head.material = headMats;
                 meshes.body.material = bodyMats;
                 meshes.armLeftMesh.material = armMat.clone();
@@ -285,7 +379,15 @@
                 meshes.legLeftMesh.material = legMat.clone();
                 meshes.legRightMesh.material = legMat.clone();
                 
-                console.log('皮肤已应用');
+                // 应用外层材质
+                if (meshes.headOuter) meshes.headOuter.material = hatMats;
+                if (meshes.bodyOuter) meshes.bodyOuter.material = jacketMats;
+                if (meshes.armLeftOuterMesh) meshes.armLeftOuterMesh.material = sleeveMat.clone();
+                if (meshes.armRightOuterMesh) meshes.armRightOuterMesh.material = sleeveMat.clone();
+                if (meshes.legLeftOuterMesh) meshes.legLeftOuterMesh.material = pantMat.clone();
+                if (meshes.legRightOuterMesh) meshes.legRightOuterMesh.material = pantMat.clone();
+                
+                console.log('双层皮肤已应用');
             };
             img.onerror = () => console.error('皮肤加载失败:', imageUrl);
             img.src = imageUrl;
@@ -301,7 +403,7 @@
             loadingDiv.style.display = 'block';
             generateBtn.disabled = true;
             try {
-                const fullPrompt = `Minecraft skin character, ${prompt}, ${style}, pixel art, 64x64`;
+                const fullPrompt = `Minecraft skin character, ${prompt}, ${style}, pixel art, 64x64, front view`;
                 const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(fullPrompt)}?width=512&height=512&nologo=true`;
                 const img = new Image();
                 img.crossOrigin = "Anonymous";
