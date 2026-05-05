@@ -175,14 +175,14 @@
         // ----- 左腿：高1.2，范围 Y: -1.2 ~ 0，中心 Y = -0.6 -----
         const legGeo = new THREE.BoxGeometry(0.4, 1.2, 0.4);
         const legLeft = new THREE.Mesh(legGeo, createTempMat());
-        legLeft.position.set(-0.225, -0.6, 0);
+        legLeft.position.set(-0.2, -0.6, 0);
         legLeft.castShadow = true;
         group.add(legLeft);
         meshes.legLeft = legLeft;
         
         // ----- 右腿 -----
         const legRight = new THREE.Mesh(legGeo, createTempMat());
-        legRight.position.set(0.225, -0.6, 0);
+        legRight.position.set(0.2, -0.6, 0);
         legRight.castShadow = true;
         group.add(legRight);
         meshes.legRight = legRight;
