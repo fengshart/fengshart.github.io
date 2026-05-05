@@ -217,12 +217,12 @@
             
             // 手臂：绕肩膀旋转 ±30° (0.523 弧度)
             const armSwing = Math.sin(time) * 0.523;
-            meshes.armLeft.rotation.x = -armSwing;
+            meshes.armLeft.rotation.x = armSwing;
             meshes.armRight.rotation.x = -armSwing;
             
             // 腿：绕大腿根旋转 ±20° (0.35 弧度)，与手臂同向（左臂+左腿同时向前）
             const legSwing = Math.sin(time) * 0.4;
-            meshes.legLeft.rotation.x = -legSwing;
+            meshes.legLeft.rotation.x = legSwing;
             meshes.legRight.rotation.x = -legSwing;
             
             controls.update();
