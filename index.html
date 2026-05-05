@@ -107,40 +107,48 @@
         </div>
 
     <script>
-        // 模拟图库数据
-        const images = [
-            { url: "https://picsum.photos/id/1/300/200", name: "山水风景" },
-            { url: "https://picsum.photos/id/2/300/200", name: "城市夜景" }
-        ];
+    // 只保留1个皮肤展示，无多余内容
+    function renderGallery() {
+        const container = document.getElementById('gallery');
+        container.innerHTML = `
+        <div class="card" style="width: 348px; margin: 0 auto;">
+            <div class="bg-green-50 relative aspect-square">
+                <canvas id="skin-canvas" class="absolute inset-0 w-full h-full" width="348" height="348"></canvas>
+                <div class="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/30 text-white px-3 py-1 rounded-full text-sm">Drag to rotate • Scroll to zoom</div>
+            </div>
+            <div class="info">
+                <strong>我的世界皮肤</strong><br>
+                <a href="remember!.png" download class="download-btn">⬇️ 下载皮肤</a>
+            </div>
+        </div>
+        `；
+    }
+    renderGallery();
+        
+    // 加载3D皮肤
+    window.onload = () => {
+        const viewer = new skinview3d.SkinViewer({
+            canvas: document.getElementById("skin-canvas"),
+            width: 348,
+            height: 348,
+            skin: "remember!.png"
+         });
+     };
 
-        function renderGallery() {
-            const container = document.getElementById('gallery');
-            if(images.length === 0) {
-                container.innerHTML = '<p>暂无图片，请等待管理员生成</p>';
-                return;
-            }
-            container.innerHTML = images.map(img => `
-                <div class="card">
-                    <img src="${img.url}" alt="${img.name}">
-                    <div class="info">
-                        <strong>${img.name}</strong><br>
-                        <a href="${img.url}" download class="download-btn">⬇️ 下载</a>
-                    </div>
-                </div>
-            `).join('');
-        }
-        renderGallery();
-
-        // 处理提交
-        document.getElementById('demandForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const keywords = document.getElementById('keywords').value;
-            const style = document.getElementById('style').value;
-            console.log('提交需求：', { keywords, style });
-            document.getElementById('msg').innerText = '✅ 需求已提交，管理员会尽快处理';
-            e.target.reset();
-            setTimeout(() => document.getElementById('msg').innerText = '', 3000);
-        });
+    // 处理提交（完全保留你原来的功能）
+    document.getElementById('demandForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const keywords = document.getElementById('keywords').value;
+        const style = document.getElementById('style').value;
+        console.log('提交需求：', { keywords, style });
+        document.getElementById('msg').innerText = '✅ 需求已提交，管理员会尽快处理';
+        e.target.reset();
+        setTimeout(() => document.getElementById('msg').innerText = '', 3000);
+     });
     </script>
+
+   <!-- 必须加的2个依赖（只加这两行） -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.156.0/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/skinview3d@3.0.1/bundle/skinview3d.bundle.min.js"></script>
 </body>
 </html>
