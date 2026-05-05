@@ -162,13 +162,13 @@
         const armGeo = new THREE.BoxGeometry(0.4, 1.2, 0.4);
         
         const armLeft = new THREE.Mesh(armGeo, createTempMat());
-        armLeft.position.set(-0.6, 0.6, 0);
+        armLeft.position.set(-0.55, 0.6, 0);
         armLeft.castShadow = true;
         group.add(armLeft);
         meshes.armLeft = armLeft;
         
         const armRight = new THREE.Mesh(armGeo, createTempMat());
-        armRight.position.set(0.6, 0.6, 0);
+        armRight.position.set(0.55, 0.6, 0);
         armRight.castShadow = true;
         group.add(armRight);
         meshes.armRight = armRight;
@@ -177,13 +177,13 @@
         const legGeo = new THREE.BoxGeometry(0.4, 1.2, 0.4);
         
         const legLeft = new THREE.Mesh(legGeo, createTempMat());
-        legLeft.position.set(-0.3, -0.6, 0);
+        legLeft.position.set(-0.35, -0.6, 0);
         legLeft.castShadow = true;
         group.add(legLeft);
         meshes.legLeft = legLeft;
         
         const legRight = new THREE.Mesh(legGeo, createTempMat());
-        legRight.position.set(0.3, -0.6, 0);
+        legRight.position.set(0.35, -0.6, 0);
         legRight.castShadow = true;
         group.add(legRight);
         meshes.legRight = legRight;
