@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>AI Minecraft 皮肤生成器 - 双层皮肤</title>
+    <title>AI Minecraft 皮肤生成器 - 调试工具</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: Arial, sans-serif; background: #f0f2f5; min-height: 100vh; padding: 20px; }
@@ -28,6 +28,46 @@
         .demand-list { margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; max-height: 300px; overflow-y: auto; }
         .demand-item { padding: 12px; border-bottom: 1px solid #eee; background: #f9f9f9; border-radius: 8px; margin-bottom: 8px; cursor: pointer; }
         .demand-item:hover { background: #e9ecef; }
+        
+        /* 调试工具样式 */
+        .debug-panel {
+            margin-top: 20px;
+            padding: 15px;
+            background: #1e1e2e;
+            border-radius: 12px;
+            color: #fff;
+        }
+        .debug-panel h3 { margin-bottom: 10px; color: #4caf50; }
+        .debug-canvas {
+            background: #2d2d44;
+            border-radius: 8px;
+            margin: 10px 0;
+            cursor: crosshair;
+        }
+        .pixel-info {
+            font-family: monospace;
+            font-size: 12px;
+            margin-top: 10px;
+            padding: 8px;
+            background: #2d2d44;
+            border-radius: 6px;
+        }
+        .region-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-top: 10px;
+            font-size: 12px;
+        }
+        .region-item {
+            background: #2d2d44;
+            padding: 5px;
+            border-radius: 4px;
+            text-align: center;
+            cursor: pointer;
+        }
+        .region-item:hover { background: #3d3d5e; }
+        
         @media (max-width: 768px) { .left-panel, .right-panel { min-width: auto; } }
     </style>
 </head>
@@ -61,6 +101,15 @@
         <div class="right-panel">
             <h2>🎮 3D 皮肤预览</h2>
             <div id="canvas-container"></div>
+            
+            <!-- 调试工具 -->
+            <div class="debug-panel">
+                <h3>🔧 皮肤调试工具</h3>
+                <canvas id="debugCanvas" class="debug-canvas" width="256" height="256" style="width:256px;height:256px"></canvas>
+                <div class="pixel-info" id="pixelInfo">鼠标移到图片上查看像素位置</div>
+                <div class="region-grid" id="regionGrid"></div>
+            </div>
+            
             <div class="loading" id="loading">
                 <div class="spinner"></div>
                 <p>AI 正在生成皮肤，请稍候...</p>
@@ -90,7 +139,7 @@
         import * as THREE from 'three';
         import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
         
-        // 初始化场景
+        // ========== 初始化场景 ==========
         const container = document.getElementById('canvas-container');
         const scene = new THREE.Scene();
         scene.background = new THREE.Color(0x1a1a2e);
@@ -122,7 +171,6 @@
         fillLight.position.set(0, 1, 0);
         scene.add(fillLight);
         
-        // 网格地面
         const gridHelper = new THREE.GridHelper(8, 16, 0x88aaff, 0x335588);
         gridHelper.position.y = -1.2;
         scene.add(gridHelper);
@@ -135,162 +183,74 @@
             return new THREE.MeshStandardMaterial({ color: 0x88aaff });
         }
         
-        function createTransparentMat() {
-            return new THREE.MeshStandardMaterial({ color: 0xffffff, transparent: true, alphaTest: 0.1 });
-        }
-        
-        // ----- 头 -----
+        // 头
         const headGeo = new THREE.BoxGeometry(0.8, 0.8, 0.8);
-        const head = new THREE.Mesh(headGeo, [
-            createTempMat(), createTempMat(), createTempMat(),
-            createTempMat(), createTempMat(), createTempMat()
-        ]);
+        const head = new THREE.Mesh(headGeo, [createTempMat(), createTempMat(), createTempMat(), createTempMat(), createTempMat(), createTempMat()]);
         head.position.set(0, 1.6, 0);
         head.castShadow = true;
         group.add(head);
         meshes.head = head;
         
-        // ----- 头外层（帽子）-----
-        const headOuterGeo = new THREE.BoxGeometry(0.85, 0.85, 0.85);
-        const headOuter = new THREE.Mesh(headOuterGeo, [
-            createTransparentMat(), createTransparentMat(), createTransparentMat(),
-            createTransparentMat(), createTransparentMat(), createTransparentMat()
-        ]);
-        headOuter.position.set(0, 1.6, 0);
-        headOuter.castShadow = true;
-        group.add(headOuter);
-        meshes.headOuter = headOuter;
-        
-        // ----- 身体 -----
+        // 身体
         const bodyGeo = new THREE.BoxGeometry(0.8, 1.2, 0.4);
-        const body = new THREE.Mesh(bodyGeo, [
-            createTempMat(), createTempMat(), createTempMat(),
-            createTempMat(), createTempMat(), createTempMat()
-        ]);
+        const body = new THREE.Mesh(bodyGeo, [createTempMat(), createTempMat(), createTempMat(), createTempMat(), createTempMat(), createTempMat()]);
         body.position.set(0, 0.6, 0);
         body.castShadow = true;
         group.add(body);
         meshes.body = body;
         
-        // ----- 身体外层（外套）-----
-        const bodyOuterGeo = new THREE.BoxGeometry(0.85, 1.25, 0.45);
-        const bodyOuter = new THREE.Mesh(bodyOuterGeo, [
-            createTransparentMat(), createTransparentMat(), createTransparentMat(),
-            createTransparentMat(), createTransparentMat(), createTransparentMat()
-        ]);
-        bodyOuter.position.set(0, 0.6, 0);
-        bodyOuter.castShadow = true;
-        group.add(bodyOuter);
-        meshes.bodyOuter = bodyOuter;
-        
-        // ----- 手臂 -----
+        // 手臂
         const armGeo = new THREE.BoxGeometry(0.4, 1.2, 0.4);
-        
         const armLeftGroup = new THREE.Group();
         const armLeftMesh = new THREE.Mesh(armGeo, createTempMat());
         armLeftMesh.position.set(0, -0.6, 0);
         armLeftGroup.add(armLeftMesh);
         armLeftGroup.position.set(-0.6, 1.2, 0);
-        armLeftGroup.castShadow = true;
         group.add(armLeftGroup);
         meshes.armLeft = armLeftGroup;
         meshes.armLeftMesh = armLeftMesh;
-        
-        // 左臂外层（袖子）
-        const armLeftOuterGroup = new THREE.Group();
-        const armLeftOuterMesh = new THREE.Mesh(armGeo, createTransparentMat());
-        armLeftOuterMesh.position.set(0, -0.6, 0);
-        armLeftOuterGroup.add(armLeftOuterMesh);
-        armLeftOuterGroup.position.set(-0.6, 1.2, 0);
-        armLeftOuterGroup.castShadow = true;
-        group.add(armLeftOuterGroup);
-        meshes.armLeftOuter = armLeftOuterGroup;
-        meshes.armLeftOuterMesh = armLeftOuterMesh;
         
         const armRightGroup = new THREE.Group();
         const armRightMesh = new THREE.Mesh(armGeo, createTempMat());
         armRightMesh.position.set(0, -0.6, 0);
         armRightGroup.add(armRightMesh);
         armRightGroup.position.set(0.6, 1.2, 0);
-        armRightGroup.castShadow = true;
         group.add(armRightGroup);
         meshes.armRight = armRightGroup;
         meshes.armRightMesh = armRightMesh;
         
-        // 右臂外层（袖子）
-        const armRightOuterGroup = new THREE.Group();
-        const armRightOuterMesh = new THREE.Mesh(armGeo, createTransparentMat());
-        armRightOuterMesh.position.set(0, -0.6, 0);
-        armRightOuterGroup.add(armRightOuterMesh);
-        armRightOuterGroup.position.set(0.6, 1.2, 0);
-        armRightOuterGroup.castShadow = true;
-        group.add(armRightOuterGroup);
-        meshes.armRightOuter = armRightOuterGroup;
-        meshes.armRightOuterMesh = armRightOuterMesh;
-        
-        // ----- 腿 -----
+        // 腿
         const legGeo = new THREE.BoxGeometry(0.4, 1.2, 0.4);
-        
         const legLeftGroup = new THREE.Group();
         const legLeftMesh = new THREE.Mesh(legGeo, createTempMat());
         legLeftMesh.position.set(0, -0.6, 0);
         legLeftGroup.add(legLeftMesh);
         legLeftGroup.position.set(-0.2, 0, 0);
-        legLeftGroup.castShadow = true;
         group.add(legLeftGroup);
         meshes.legLeft = legLeftGroup;
         meshes.legLeftMesh = legLeftMesh;
-        
-        // 左腿外层（裤腿）
-        const legLeftOuterGroup = new THREE.Group();
-        const legLeftOuterMesh = new THREE.Mesh(legGeo, createTransparentMat());
-        legLeftOuterMesh.position.set(0, -0.6, 0);
-        legLeftOuterGroup.add(legLeftOuterMesh);
-        legLeftOuterGroup.position.set(-0.2, 0, 0);
-        legLeftOuterGroup.castShadow = true;
-        group.add(legLeftOuterGroup);
-        meshes.legLeftOuter = legLeftOuterGroup;
-        meshes.legLeftOuterMesh = legLeftOuterMesh;
         
         const legRightGroup = new THREE.Group();
         const legRightMesh = new THREE.Mesh(legGeo, createTempMat());
         legRightMesh.position.set(0, -0.6, 0);
         legRightGroup.add(legRightMesh);
         legRightGroup.position.set(0.2, 0, 0);
-        legRightGroup.castShadow = true;
         group.add(legRightGroup);
         meshes.legRight = legRightGroup;
         meshes.legRightMesh = legRightMesh;
         
-        // 右腿外层（裤腿）
-        const legRightOuterGroup = new THREE.Group();
-        const legRightOuterMesh = new THREE.Mesh(legGeo, createTransparentMat());
-        legRightOuterMesh.position.set(0, -0.6, 0);
-        legRightOuterGroup.add(legRightOuterMesh);
-        legRightOuterGroup.position.set(0.2, 0, 0);
-        legRightOuterGroup.castShadow = true;
-        group.add(legRightOuterGroup);
-        meshes.legRightOuter = legRightOuterGroup;
-        meshes.legRightOuterMesh = legRightOuterMesh;
-        
         scene.add(group);
         
-        // ========== 动画 ==========
+        // 动画
         let time = 0;
         function animate() {
             requestAnimationFrame(animate);
             time += 0.02;
             const t = Math.sin(time);
-            // 手臂（内层+外层一起旋转）
             meshes.armLeft.rotation.x = t * 0.523;
             meshes.armRight.rotation.x = -t * 0.523;
-            meshes.armLeftOuter.rotation.x = t * 0.523;
-            meshes.armRightOuter.rotation.x = -t * 0.523;
-            // 腿
             meshes.legLeft.rotation.x = -t * 0.4;
             meshes.legRight.rotation.x = t * 0.4;
-            meshes.legLeftOuter.rotation.x = -t * 0.4;
-            meshes.legRightOuter.rotation.x = t * 0.4;
             controls.update();
             renderer.render(scene, camera);
         }
@@ -304,8 +264,8 @@
             renderer.setSize(width, height);
         });
         
-        // ========== 皮肤纹理裁切（双层）==========
-        function getFaceMaterial(img, x, y, w, h, isOuter = false) {
+        // ========== 皮肤纹理裁切 ==========
+        function getFaceMaterial(img, x, y, w, h) {
             const canvas = document.createElement('canvas');
             canvas.width = w;
             canvas.height = h;
@@ -313,9 +273,6 @@
             ctx.drawImage(img, x, y, w, h, 0, 0, w, h);
             const texture = new THREE.CanvasTexture(canvas);
             texture.magFilter = THREE.NearestFilter;
-            if (isOuter) {
-                return new THREE.MeshStandardMaterial({ map: texture, transparent: true, alphaTest: 0.1 });
-            }
             return new THREE.MeshStandardMaterial({ map: texture });
         }
         
@@ -323,7 +280,6 @@
             const img = new Image();
             img.crossOrigin = "Anonymous";
             img.onload = () => {
-                // ========== 内层 (Base Layer, y=0~32) ==========
                 // 头部 6 面
                 const headMats = [
                     getFaceMaterial(img, 0, 8, 8, 8),   // 右
@@ -342,36 +298,9 @@
                     getFaceMaterial(img, 20, 20, 8, 12), // 前
                     getFaceMaterial(img, 28, 20, 8, 12)  // 后
                 ];
-                // 手臂材质
                 const armMat = getFaceMaterial(img, 40, 20, 4, 12);
-                // 腿材质
                 const legMat = getFaceMaterial(img, 4, 20, 4, 12);
                 
-                // ========== 外层 (Second Layer, y=32~64) ==========
-                // 帽子 6 面
-                const hatMats = [
-                    getFaceMaterial(img, 0, 40, 8, 8, true),   // 右
-                    getFaceMaterial(img, 16, 40, 8, 8, true),  // 左
-                    getFaceMaterial(img, 8, 32, 8, 8, true),   // 上
-                    getFaceMaterial(img, 16, 32, 8, 8, true),  // 下
-                    getFaceMaterial(img, 8, 40, 8, 8, true),   // 前
-                    getFaceMaterial(img, 24, 40, 8, 8, true)   // 后
-                ];
-                // 外套 6 面
-                const jacketMats = [
-                    getFaceMaterial(img, 24, 52, 4, 12, true),  // 右
-                    getFaceMaterial(img, 16, 52, 4, 12, true), // 左
-                    getFaceMaterial(img, 20, 48, 8, 4, true),  // 上
-                    getFaceMaterial(img, 20, 64, 8, 4, true),  // 下
-                    getFaceMaterial(img, 20, 52, 8, 12, true), // 前
-                    getFaceMaterial(img, 28, 52, 8, 12, true)  // 后
-                ];
-                // 袖子外层
-                const sleeveMat = getFaceMaterial(img, 40, 52, 4, 12, true);
-                // 裤腿外层
-                const pantMat = getFaceMaterial(img, 4, 52, 4, 12, true);
-                
-                // 应用内层材质
                 meshes.head.material = headMats;
                 meshes.body.material = bodyMats;
                 meshes.armLeftMesh.material = armMat.clone();
@@ -379,24 +308,130 @@
                 meshes.legLeftMesh.material = legMat.clone();
                 meshes.legRightMesh.material = legMat.clone();
                 
-                // 应用外层材质
-                if (meshes.headOuter) meshes.headOuter.material = hatMats;
-                if (meshes.bodyOuter) meshes.bodyOuter.material = jacketMats;
-                if (meshes.armLeftOuterMesh) meshes.armLeftOuterMesh.material = sleeveMat.clone();
-                if (meshes.armRightOuterMesh) meshes.armRightOuterMesh.material = sleeveMat.clone();
-                if (meshes.legLeftOuterMesh) meshes.legLeftOuterMesh.material = pantMat.clone();
-                if (meshes.legRightOuterMesh) meshes.legRightOuterMesh.material = pantMat.clone();
+                console.log('皮肤已应用');
                 
-                console.log('双层皮肤已应用');
+                // 更新调试工具
+                setupDebugger(img);
             };
             img.onerror = () => console.error('皮肤加载失败:', imageUrl);
             img.src = imageUrl;
         }
         
+        // ========== 调试工具：分析皮肤图片 ==========
+        function setupDebugger(img) {
+            const debugCanvas = document.getElementById('debugCanvas');
+            const ctx = debugCanvas.getContext('2d');
+            
+            // 放大显示皮肤图片（4倍放大到256x256）
+            debugCanvas.width = 256;
+            debugCanvas.height = 256;
+            ctx.imageSmoothingEnabled = false;
+            ctx.drawImage(img, 0, 0, 256, 256);
+            
+            // 像素信息显示
+            const pixelInfo = document.getElementById('pixelInfo');
+            debugCanvas.addEventListener('mousemove', (e) => {
+                const rect = debugCanvas.getBoundingClientRect();
+                const scaleX = 256 / rect.width;
+                const scaleY = 256 / rect.height;
+                let x = Math.floor((e.clientX - rect.left) * scaleX);
+                let y = Math.floor((e.clientY - rect.top) * scaleY);
+                x = Math.min(255, Math.max(0, x));
+                y = Math.min(255, Math.max(0, y));
+                const imgX = Math.floor(x / 4);
+                const imgY = Math.floor(y / 4);
+                const pixel = ctx.getImageData(x, y, 1, 1).data;
+                const region = getRegionName(imgX, imgY);
+                pixelInfo.innerHTML = `📍 位置: (${imgX}, ${imgY}) | RGB: (${pixel[0]}, ${pixel[1]}, ${pixel[2]}) | 🎯 部位: ${region}`;
+            });
+            
+            // 生成区域网格
+            const regionGrid = document.getElementById('regionGrid');
+            const regions = getRegionList();
+            regionGrid.innerHTML = regions.map(r => `<div class="region-item" data-x="${r.x}" data-y="${r.x}" data-w="${r.w}" data-h="${r.h}">${r.name}<br><span style="font-size:10px;color:#aaa">(${r.x},${r.y}) ${r.w}x${r.h}</span></div>`).join('');
+            
+            // 点击区域高亮
+            document.querySelectorAll('.region-item').forEach(el => {
+                el.addEventListener('click', () => {
+                    const x = parseInt(el.dataset.x);
+                    const y = parseInt(el.dataset.y);
+                    const w = parseInt(el.dataset.w);
+                    const h = parseInt(el.dataset.h);
+                    // 在 canvas 上绘制边框
+                    ctx.strokeStyle = '#ff0000';
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(x * 4, y * 4, w * 4, h * 4);
+                    setTimeout(() => {
+                        ctx.drawImage(img, 0, 0, 256, 256);
+                    }, 1000);
+                });
+            });
+        }
+        
+        function getRegionName(x, y) {
+            // 内层区域
+            if (y >= 8 && y < 16) {
+                if (x >= 8 && x < 16) return '头正面';
+                if (x >= 24 && x < 32) return '头背面';
+                if (x >= 0 && x < 8) return '头左面';
+                if (x >= 16 && x < 24) return '头右面';
+            }
+            if (y >= 0 && y < 8) {
+                if (x >= 8 && x < 16) return '头顶';
+                if (x >= 16 && x < 24) return '下巴';
+            }
+            if (y >= 20 && y < 32) {
+                if (x >= 20 && x < 28) return '身体正面';
+                if (x >= 28 && x < 36) return '身体背面';
+                if (x >= 16 && x < 20) return '身体左面';
+                if (x >= 24 && x < 28) return '身体右面';
+                if (x >= 40 && x < 44) return '右臂';
+                if (x >= 36 && x < 40) return '左臂';
+                if (x >= 0 && x < 4) return '左腿';
+                if (x >= 4 && x < 8) return '右腿';
+            }
+            // 外层区域
+            if (y >= 40 && y < 48) {
+                if (x >= 8 && x < 16) return '帽子正面';
+                if (x >= 24 && x < 32) return '帽子背面';
+            }
+            if (y >= 32 && y < 40) {
+                if (x >= 8 && x < 16) return '帽顶';
+            }
+            if (y >= 52 && y < 64) {
+                if (x >= 20 && x < 28) return '外套正面';
+                if (x >= 28 && x < 36) return '外套背面';
+                if (x >= 40 && x < 44) return '右袖外层';
+                if (x >= 36 && x < 40) return '左袖外层';
+                if (x >= 0 && x < 4) return '左腿外层';
+                if (x >= 4 && x < 8) return '右腿外层';
+            }
+            return '空白/其他区域';
+        }
+        
+        function getRegionList() {
+            return [
+                { name: '头正面', x: 8, y: 8, w: 8, h: 8 },
+                { name: '头背面', x: 24, y: 8, w: 8, h: 8 },
+                { name: '头左面', x: 0, y: 8, w: 8, h: 8 },
+                { name: '头右面', x: 16, y: 8, w: 8, h: 8 },
+                { name: '头顶', x: 8, y: 0, w: 8, h: 8 },
+                { name: '下巴', x: 16, y: 0, w: 8, h: 8 },
+                { name: '身体正面', x: 20, y: 20, w: 8, h: 12 },
+                { name: '身体背面', x: 28, y: 20, w: 8, h: 12 },
+                { name: '左臂', x: 36, y: 20, w: 4, h: 12 },
+                { name: '右臂', x: 40, y: 20, w: 4, h: 12 },
+                { name: '左腿', x: 0, y: 20, w: 4, h: 12 },
+                { name: '右腿', x: 4, y: 20, w: 4, h: 12 },
+                { name: '帽子正面', x: 8, y: 40, w: 8, h: 8 },
+                { name: '外套正面', x: 20, y: 52, w: 8, h: 12 }
+            ];
+        }
+        
         // 加载默认皮肤
         applySkinToModel('remember.png');
         
-        // ========== AI 生成皮肤 ==========
+        // ========== AI 生成皮肤等其余功能 ==========
         async function generateSkin(prompt, style) {
             const loadingDiv = document.getElementById('loading');
             const generateBtn = document.getElementById('generateBtn');
@@ -433,7 +468,6 @@
             }
         }
         
-        // ========== 历史记录 ==========
         function saveToHistory(prompt, style, imageDataUrl) {
             let history = localStorage.getItem('mc_skin_history');
             history = history ? JSON.parse(history) : [];
@@ -492,7 +526,6 @@
             setTimeout(() => { msgDiv.className = 'status-msg'; }, 3000);
         }
         
-        // 下载皮肤
         document.getElementById('downloadSkin').addEventListener('click', () => {
             const skinImg = document.getElementById('skinImage');
             if (skinImg.src) {
@@ -503,7 +536,6 @@
             }
         });
         
-        // 表单提交
         document.getElementById('generateForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const prompt = document.getElementById('prompt').value.trim();
