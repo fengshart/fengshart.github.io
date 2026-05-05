@@ -267,8 +267,8 @@
             time += 0.02;
             if (meshes.armL && meshes.armR) {
                 const swing = Math.sin(time) * 0.6;
-                meshes.armL.rotation.z = swing * 0.5;
-                meshes.armR.rotation.z = -swing * 0.5;
+                meshes.armL.rotation.x = swing * 0.5;
+                meshes.armR.rotation.x = -swing * 0.5;
             }
             controls.update();
             renderer.render(scene, camera);
