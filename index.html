@@ -267,8 +267,8 @@
             time += 0.02;
             if (meshes.armL && meshes.armR) {
                 const swing = Math.sin(time) * 0.6;
-                meshes.armL.rotation.z = swing * 0.5;
-                meshes.armR.rotation.z = -swing * 0.5;
+                meshes.armL.rotation.x = swing * 0.5;
+                meshes.armR.rotation.x = swing * 0.5;
             }
             controls.update();
             renderer.render(scene, camera);
@@ -287,11 +287,34 @@
         function applySkinToModel(imageUrl) {
             const loader = new THREE.TextureLoader();
             loader.load(imageUrl, (texture) => {
-                for (let name in meshes) {
-                    if (meshes[name].material) {
-                        meshes[name].material.map = texture;
-                        meshes[name].material.needsUpdate = true;
-                    }
+                // MC 64x64 皮肤各部位UV坐标 裁切
+                const skinParts = {
+                    head:   { x: 8,  y: 8,  w: 8, h: 8 },
+                    body:   { x: 20, y: 20, w: 8, h: 12 },
+                    armL:   { x: 44, y: 20, w: 4, h: 12 },
+                    armR:   { x: 36, y: 20, w: 4, h: 12 },
+                    legL:   { x: 4,  y: 20, w: 4, h: 12 },
+                    legR:   { x: 12, y: 20, w: 4, h: 12 }
+                };
+                // 用Canvas裁切对应区域，分别赋值材质
+                function setPartTexture(fullImg, partCfg) {
+                    const cvs = document.createElement('canvas');
+                    cvs.width = partCfg.w;
+                    cvs.height = partCfg.h;
+                    const ctx = cvs.getContext('2d');
+                    ctx.drawImage(
+                        fullImg,partCfg.x, partCfg.y, partCfg.w, partCfg.h,
+                        0, 0, partCfg.w, partCfg.h
+                    );
+                    const tex = new THREE.CanvasTexture(cvs);
+                    tex.magFilter = THREE.NearestFilter;
+                    tex.minFilter = THREE.NearestFilter;
+                    return new THREE.MeshStandardMaterial({ map: tex });
+                }
+                // 给每个部件单独贴对应皮肤区域
+                for(const key in skinParts){
+                    const mat = setPartTexture(texture.image, skinParts[key]);
+                    meshes[key].material = mat;
                 }
                 console.log('皮肤已应用到3D模型');
             }, undefined, (err) => {
