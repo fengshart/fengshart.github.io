@@ -157,56 +157,73 @@
         group.add(body);
         meshes.body = body;
         
-        // ----- 左臂：高1.2，范围 Y: 0 ~ 1.2，中心 Y = 0.6，贴紧身体 -----
+        // ----- 手臂几何体 -----
         const armGeo = new THREE.BoxGeometry(0.4, 1.2, 0.4);
-        const armLeft = new THREE.Mesh(armGeo, createTempMat());
-        armLeft.position.set(-0.6, 0.6, 0);
-        armLeft.castShadow = true;
-        group.add(armLeft);
-        meshes.armLeft = armLeft;
         
-        // ----- 右臂 -----
-        const armRight = new THREE.Mesh(armGeo, createTempMat());
-        armRight.position.set(0.6, 0.6, 0);
-        armRight.castShadow = true;
-        group.add(armRight);
-        meshes.armRight = armRight;
+        // 左臂：用 Group 包装，轴心在肩膀 (Y=1.2)
+        const armLeftGroup = new THREE.Group();
+        const armLeftMesh = new THREE.Mesh(armGeo, createTempMat());
+        armLeftMesh.position.set(0, -0.6, 0);  // mesh 中心向下偏移半高
+        armLeftGroup.add(armLeftMesh);
+        armLeftGroup.position.set(-0.6, 1.2, 0);  // Group 定位在肩膀
+        armLeftGroup.castShadow = true;
+        group.add(armLeftGroup);
+        meshes.armLeft = armLeftGroup;
+        meshes.armLeftMesh = armLeftMesh;
         
-        // ----- 左腿：高1.2，范围 Y: -1.2 ~ 0，中心 Y = -0.6 -----
+        // 右臂：用 Group 包装，轴心在肩膀 (Y=1.2)
+        const armRightGroup = new THREE.Group();
+        const armRightMesh = new THREE.Mesh(armGeo, createTempMat());
+        armRightMesh.position.set(0, -0.6, 0);
+        armRightGroup.add(armRightMesh);
+        armRightGroup.position.set(0.6, 1.2, 0);
+        armRightGroup.castShadow = true;
+        group.add(armRightGroup);
+        meshes.armRight = armRightGroup;
+        meshes.armRightMesh = armRightMesh;
+        
+        // ----- 腿几何体 -----
         const legGeo = new THREE.BoxGeometry(0.4, 1.2, 0.4);
-        const legLeft = new THREE.Mesh(legGeo, createTempMat());
-        legLeft.position.set(-0.2, -0.6, 0);
-        legLeft.castShadow = true;
-        group.add(legLeft);
-        meshes.legLeft = legLeft;
         
-        // ----- 右腿 -----
-        const legRight = new THREE.Mesh(legGeo, createTempMat());
-        legRight.position.set(0.2, -0.6, 0);
-        legRight.castShadow = true;
-        group.add(legRight);
-        meshes.legRight = legRight;
+        // 左腿：用 Group 包装，轴心在大腿根 (Y=0)
+        const legLeftGroup = new THREE.Group();
+        const legLeftMesh = new THREE.Mesh(legGeo, createTempMat());
+        legLeftMesh.position.set(0, -0.6, 0);  // mesh 中心向下偏移半高
+        legLeftGroup.add(legLeftMesh);
+        legLeftGroup.position.set(-0.2, 0, 0);  // Group 定位在大腿根
+        legLeftGroup.castShadow = true;
+        group.add(legLeftGroup);
+        meshes.legLeft = legLeftGroup;
+        meshes.legLeftMesh = legLeftMesh;
+        
+        // 右腿：用 Group 包装，轴心在大腿根 (Y=0)
+        const legRightGroup = new THREE.Group();
+        const legRightMesh = new THREE.Mesh(legGeo, createTempMat());
+        legRightMesh.position.set(0, -0.6, 0);
+        legRightGroup.add(legRightMesh);
+        legRightGroup.position.set(0.2, 0, 0);
+        legRightGroup.castShadow = true;
+        group.add(legRightGroup);
+        meshes.legRight = legRightGroup;
+        meshes.legRightMesh = legRightMesh;
         
         scene.add(group);
         
-        // ========== 单摆动画 ==========
+        // ========== 单摆动画（绕正确的轴心）==========
         let time = 0;
         function animate() {
             requestAnimationFrame(animate);
             time += 0.02;
             
-            if (meshes.armLeft && meshes.armRight && meshes.legLeft && meshes.legRight) {
-                // 手臂：绕肩膀旋转 ±30°（肩膀位置在 Y=1.2，物体中心在 Y=0.6）
-                // 由于物体中心不在肩膀，需要调整旋转效果，这里简化处理
-                const armSwing = Math.sin(time) * 0.523;
-                meshes.armLeft.rotation.x = armSwing;
-                meshes.armRight.rotation.x = -armSwing;
-                
-                // 腿：绕大腿根部旋转 ±20°，与手臂反向
-                const legSwing = Math.sin(time) * 0.35;
-                meshes.legLeft.rotation.x = -legSwing;
-                meshes.legRight.rotation.x = legSwing;
-            }
+            // 手臂：绕肩膀旋转 ±30° (0.523 弧度)
+            const armSwing = Math.sin(time) * 0.523;
+            meshes.armLeft.rotation.x = armSwing;
+            meshes.armRight.rotation.x = -armSwing;
+            
+            // 腿：绕大腿根旋转 ±20° (0.35 弧度)，与手臂同向（左臂+左腿同时向前）
+            const legSwing = Math.sin(time) * 0.35;
+            meshes.legLeft.rotation.x = legSwing;
+            meshes.legRight.rotation.x = -legSwing;
             
             controls.update();
             renderer.render(scene, camera);
@@ -262,10 +279,10 @@
                 
                 meshes.head.material = headMats;
                 meshes.body.material = bodyMats;
-                meshes.armLeft.material = armMat.clone();
-                meshes.armRight.material = armMat.clone();
-                meshes.legLeft.material = legMat.clone();
-                meshes.legRight.material = legMat.clone();
+                meshes.armLeftMesh.material = armMat.clone();
+                meshes.armRightMesh.material = armMat.clone();
+                meshes.legLeftMesh.material = legMat.clone();
+                meshes.legRightMesh.material = legMat.clone();
                 
                 console.log('皮肤已应用');
             };
