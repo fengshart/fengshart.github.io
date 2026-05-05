@@ -285,39 +285,39 @@
         
         // ========== 3. 应用皮肤纹理到 3D 模型 ==========
         function applySkinToModel(imageUrl) {
-            const loader = new THREE.TextureLoader();
-            loader.load(imageUrl, (texture) => {
-                // MC 64x64 皮肤各部位UV坐标 裁切
+            const img = new Image();
+            img.crossOrigin = "Anonymous";
+            img.onload = () => {
                 const skinParts = {
-                    head:   { x: 8,  y: 8,  w: 8, h: 8 },
-                    body:   { x: 20, y: 20, w: 8, h: 12 },
-                    armL:   { x: 44, y: 20, w: 4, h: 12 },
-                    armR:   { x: 36, y: 20, w: 4, h: 12 },
-                    legL:   { x: 4,  y: 20, w: 4, h: 12 },
-                    legR:   { x: 12, y: 20, w: 4, h: 12 }
-                };
-                // 用Canvas裁切对应区域，分别赋值材质
-                const img = texture.image;
-
-                for (let [key, cfg] of Object.entries(skinParts)) {
-                    if (meshes[key]){
-                        const canvas = document.createElement('canvas');
-                        canvas.width = cfg.w;
-                        canvas.height = cfg.h;
-                        const ctx = cvs.getContext('2d');
-                        ctx.drawImage(img, cfg.x, cfg.y, cfg.w, cfg.h, 0, 0, cfg.w, cfg.h);
-                        const parTex = new THREE.CanvasTexture(canvas);
-                        partTex.magFilter = THREE.NearestFilter;
-                        meshes[key].material = new THREE.MeshStandardMaterial({ map: partTex });
-                    }
+                head:   { x: 8,  y: 8,  w: 8, h: 8, mesh: meshes.head },
+                body:   { x: 20, y: 20, w: 8, h: 12, mesh: meshes.body },
+                armL:   { x: 40, y: 20, w: 4, h: 12, mesh: meshes.armL },
+                armR:   { x: 44, y: 20, w: 4, h: 12, mesh: meshes.armR },
+                legL:   { x: 4,  y: 20, w: 4, h: 12, mesh: meshes.legL },
+                legR:   { x: 8,  y: 20, w: 4, h: 12, mesh: meshes.legR }
+            };
+        
+            for (let key in skinParts) {
+                const part = skinParts[key];
+                if (part.mesh) {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = part.w;
+                    canvas.height = part.h;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, part.x, part.y, part.w, part.h, 0, 0, part.w, part.h);
+                    const tex = new THREE.CanvasTexture(canvas);
+                    tex.magFilter = THREE.NearestFilter;
+                    part.mesh.material = new THREE.MeshStandardMaterial({ map: tex });
                 }
-            },undefined,(err) =>{
-                console.error('纹理加载失败:', err);
-            });
-        }
+            }
+            console.log('皮肤已应用');
+        };
+        img.onerror = () => console.error('皮肤加载失败:', imageUrl);
+        img.src = imageUrl;
+    }
         
         // 默认皮肤
-        applySkinToModel('https://threejs.org/examples/models/gltf/RobotExpressive/RobotExpressive.png');
+        applySkinToModel('remember.png');
         
         // ========== 4. AI 生成皮肤的核心函数 ==========
         // 注意：这里使用免费的 AI 图像生成 API（Pollinations.ai，无需 API Key）
