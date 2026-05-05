@@ -125,85 +125,102 @@
         gridHelper.position.y = -1.2;
         scene.add(gridHelper);
         
-        // ========== 按标准 Minecraft 比例创建的模型 ==========
-        // 尺寸：头(8px)，身体、手臂、腿(12px)
-        // 脚底贴合网格 Y = -1.2
+        // ========== 模型组 ==========
         const group = new THREE.Group();
         const meshes = {};
         
-        // 创建材质占位符（后续用皮肤替换）
         function createTempMat() {
             return new THREE.MeshStandardMaterial({ color: 0x88aaff });
         }
         
-        // 头：高 0.8，底部 Y = 1.2，中心 Y = 1.6
+        // ----- 头：轴心在底部（脖子），位置 Y=1.2 -----
         const headGeo = new THREE.BoxGeometry(0.8, 0.8, 0.8);
         const head = new THREE.Mesh(headGeo, [
             createTempMat(), createTempMat(), createTempMat(),
             createTempMat(), createTempMat(), createTempMat()
         ]);
-        head.position.set(0, 1.6, 0);
+        head.position.set(0, 1.2, 0);  // 底部放在 Y=1.2
         head.castShadow = true;
         group.add(head);
         meshes.head = head;
         
-        // 身体：宽 0.8，高 1.2，底部 Y = 0，中心 Y = 0.6
+        // ----- 身体：轴心在底部（腰部），位置 Y=0 -----
         const bodyGeo = new THREE.BoxGeometry(0.8, 1.2, 0.4);
         const body = new THREE.Mesh(bodyGeo, [
             createTempMat(), createTempMat(), createTempMat(),
             createTempMat(), createTempMat(), createTempMat()
         ]);
-        body.position.set(0, 0.6, 0);
+        body.position.set(0, 0, 0);  // 底部放在 Y=0
         body.castShadow = true;
         group.add(body);
         meshes.body = body;
         
-        // 手臂：宽 0.4，高 1.2，顶部 Y = 1.2，底部 Y = 0，中心 Y = 0.6，紧贴身体两侧
+        // ----- 手臂：轴心在底部（肩膀），位置 Y=0 -----
         const armGeo = new THREE.BoxGeometry(0.4, 1.2, 0.4);
         
         const armLeft = new THREE.Mesh(armGeo, createTempMat());
-        armLeft.position.set(-0.6, 0.6, 0);
+        armLeft.position.set(-0.6, 0, 0);  // 底部放在 Y=0，从肩膀下垂
         armLeft.castShadow = true;
         group.add(armLeft);
         meshes.armLeft = armLeft;
         
         const armRight = new THREE.Mesh(armGeo, createTempMat());
-        armRight.position.set(0.6, 0.6, 0);
+        armRight.position.set(0.6, 0, 0);  // 底部放在 Y=0
         armRight.castShadow = true;
         group.add(armRight);
         meshes.armRight = armRight;
         
-        // 腿：宽 0.4，高 1.2，顶部 Y = 0，底部 Y = -1.2，中心 Y = -0.6，分开在身体下方
-        const legGeo = new THREE.BoxGeometry(0.4, 1.2, 0.4);
+        // ----- 腿：轴心在顶部（大腿根部），位置 Y=-1.2（底部）但旋转轴在顶部-----
+        // 为了让腿绕顶部旋转，将物体放在底部位置，旋转轴在顶部需要特殊处理
+        // 使用 Group 包装来实现顶部轴心旋转
+        const legGeo2 = new THREE.BoxGeometry(0.4, 1.2, 0.4);
         
-        const legLeft = new THREE.Mesh(legGeo, createTempMat());
-        legLeft.position.set(-0.225, -0.6, 0);
-        legLeft.castShadow = true;
-        group.add(legLeft);
-        meshes.legLeft = legLeft;
+        // 左腿：用 Group 包装，让旋转轴心在顶部
+        const legLeftGroup = new THREE.Group();
+        const legLeftMesh = new THREE.Mesh(legGeo2, createTempMat());
+        legLeftMesh.position.set(0, 0.6, 0);  // 让 mesh 的中心相对于 Group 在 Y=0.6
+        legLeftGroup.add(legLeftMesh);
+        legLeftGroup.position.set(-0.225, -1.2, 0);  // Group 底部在 Y=-1.2
+        legLeftGroup.castShadow = true;
+        group.add(legLeftGroup);
+        meshes.legLeft = legLeftGroup;
         
-        const legRight = new THREE.Mesh(legGeo, createTempMat());
-        legRight.position.set(0.225, -0.6, 0);
-        legRight.castShadow = true;
-        group.add(legRight);
-        meshes.legRight = legRight;
+        // 右腿
+        const legRightGroup = new THREE.Group();
+        const legRightMesh = new THREE.Mesh(legGeo2, createTempMat());
+        legRightMesh.position.set(0, 0.6, 0);
+        legRightGroup.add(legRightMesh);
+        legRightGroup.position.set(0.225, -1.2, 0);
+        legRightGroup.castShadow = true;
+        group.add(legRightGroup);
+        meshes.legRight = legRightGroup;
+        
+        // 保存腿的材质以便后续更新
+        meshes.legLeftMesh = legLeftMesh;
+        meshes.legRightMesh = legRightMesh;
         
         scene.add(group);
         
-        // ========== 动画：手臂前后摆，腿反向摆 ==========
+        // ========== 单摆动画（绕顶部轴心旋转）==========
         let time = 0;
         function animate() {
             requestAnimationFrame(animate);
             time += 0.02;
+            
             if (meshes.armLeft && meshes.armRight && meshes.legLeft && meshes.legRight) {
-                const swing = Math.sin(time) * 0.7;
-                // 手臂前后摆
-                meshes.armLeft.rotation.x = swing;
-                meshes.armRight.rotation.x = -swing;
-                // 腿反向摆（避免顺拐）
-                meshes.legLeft.rotation.x = -swing * 0.5;
-                meshes.legRight.rotation.x = swing * 0.5;
+                // 手臂：绕底部旋转（底部 = 肩膀位置）
+                // 角度 ±30° (0.523 弧度)
+                const armSwing = Math.sin(time) * 0.523;
+                meshes.armLeft.rotation.x = armSwing;
+                meshes.armRight.rotation.x = -armSwing;
+                
+                // 腿：绕顶部旋转（大腿根部 = Group 的顶部）
+                // 角度 ±20° (0.35 弧度)，与手臂反向
+                const legSwing = Math.sin(time) * 0.35;
+                meshes.legLeft.rotation.x = -legSwing;
+                meshes.legRight.rotation.x = legSwing;
             }
+            
             controls.update();
             renderer.render(scene, camera);
         }
@@ -261,8 +278,8 @@
                 meshes.body.material = bodyMats;
                 meshes.armLeft.material = armMat.clone();
                 meshes.armRight.material = armMat.clone();
-                meshes.legLeft.material = legMat.clone();
-                meshes.legRight.material = legMat.clone();
+                if (meshes.legLeftMesh) meshes.legLeftMesh.material = legMat.clone();
+                if (meshes.legRightMesh) meshes.legRightMesh.material = legMat.clone();
                 
                 console.log('皮肤已应用');
             };
