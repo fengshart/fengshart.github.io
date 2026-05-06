@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>AI Minecraft 皮肤生成器 - 完整版</title>
+    <title>AI Minecraft 皮肤生成器 - Steve/Alex 模型切换</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: Arial, sans-serif; background: #f0f2f5; min-height: 100vh; padding: 20px; }
@@ -28,6 +28,30 @@
         .demand-list { margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; max-height: 300px; overflow-y: auto; }
         .demand-item { padding: 12px; border-bottom: 1px solid #eee; background: #f9f9f9; border-radius: 8px; margin-bottom: 8px; cursor: pointer; }
         .demand-item:hover { background: #e9ecef; }
+        
+        .model-selector {
+            background: #f0f2f5;
+            padding: 12px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 12px;
+        }
+        .model-btn {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            background: #e9ecef;
+            transition: all 0.2s;
+        }
+        .model-btn.selected {
+            background: #007bff;
+            color: white;
+        }
+        .model-btn:hover { opacity: 0.8; }
+        
         @media (max-width: 768px) { .left-panel, .right-panel { min-width: auto; } }
     </style>
 </head>
@@ -35,6 +59,13 @@
     <div class="container">
         <div class="left-panel">
             <h2>🎨 AI 生成 Minecraft 皮肤</h2>
+            
+            <!-- 模型选择器 -->
+            <div class="model-selector">
+                <div id="steveBtn" class="model-btn selected">🧔 Steve<br><span style="font-size:11px">粗壮 (4px 手臂)</span></div>
+                <div id="alexBtn" class="model-btn">👧 Alex<br><span style="font-size:11px">纤细 (3px 手臂)</span></div>
+            </div>
+            
             <form id="generateForm">
                 <div class="form-group">
                     <label>🎭 角色描述</label>
@@ -90,7 +121,7 @@
         import * as THREE from 'three';
         import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
         
-        // ========== 72 分区坐标（你导出的）==========
+        // ========== 72 分区坐标 ==========
         const skinRegions = {
             "头正面内层": { x: 8, y: 8, w: 8, h: 8 },
             "头背面内层": { x: 24, y: 8, w: 8, h: 8 },
@@ -166,6 +197,22 @@
             "左腿底面外层": { x: 8, y: 48, w: 4, h: 4 }
         };
         
+        // ========== 模型参数 ==========
+        // Steve: 手臂宽 4px (0.4 单位)
+        // Alex: 手臂宽 3px (0.3 单位)
+        const MODEL_STEVE = 'steve';
+        const MODEL_ALEX = 'alex';
+        let currentModel = MODEL_STEVE;
+        
+        // 手臂尺寸配置
+        const armSizes = {
+            [MODEL_STEVE]: { inner: 0.4, outer: 0.45, xOffset: 0.6, yCenter: 0.6 },
+            [MODEL_ALEX]: { inner: 0.3, outer: 0.35, xOffset: 0.55, yCenter: 0.6 }
+        };
+        
+        // 腿尺寸（两种模型相同）
+        const legSizes = { inner: 0.4, outer: 0.45, xOffset: 0.2, yCenter: -0.6 };
+        
         // ========== 辅助函数 ==========
         function getMaterialFromRegion(img, region, useTransparent = false) {
             const canvas = document.createElement('canvas');
@@ -217,7 +264,7 @@
         gridHelper.position.y = -1.2;
         scene.add(gridHelper);
         
-        // ========== 创建模型 ==========
+        // ========== 模型组 ==========
         const group = new THREE.Group();
         const meshes = {};
         
@@ -228,7 +275,7 @@
             return new THREE.MeshStandardMaterial({ color: 0xffffff, transparent: true, alphaTest: 0.1 });
         }
         
-        // ----- 头部 -----
+        // ----- 头部（两种模型相同）-----
         const headGeo = new THREE.BoxGeometry(0.8, 0.8, 0.8);
         const head = new THREE.Mesh(headGeo, [createTempMat(), createTempMat(), createTempMat(), createTempMat(), createTempMat(), createTempMat()]);
         head.position.set(0, 1.6, 0);
@@ -236,7 +283,6 @@
         group.add(head);
         meshes.head = head;
         
-        // 头部外层（帽子）- 稍大
         const headOuterGeo = new THREE.BoxGeometry(0.85, 0.85, 0.85);
         const headOuter = new THREE.Mesh(headOuterGeo, [createTempTransparentMat(), createTempTransparentMat(), createTempTransparentMat(), createTempTransparentMat(), createTempTransparentMat(), createTempTransparentMat()]);
         headOuter.position.set(0, 1.6, 0);
@@ -244,7 +290,7 @@
         group.add(headOuter);
         meshes.headOuter = headOuter;
         
-        // ----- 身体 -----
+        // ----- 身体（两种模型相同）-----
         const bodyGeo = new THREE.BoxGeometry(0.8, 1.2, 0.4);
         const body = new THREE.Mesh(bodyGeo, [createTempMat(), createTempMat(), createTempMat(), createTempMat(), createTempMat(), createTempMat()]);
         body.position.set(0, 0.6, 0);
@@ -252,7 +298,6 @@
         group.add(body);
         meshes.body = body;
         
-        // 身体外层（外套）- 稍大
         const bodyOuterGeo = new THREE.BoxGeometry(0.85, 1.25, 0.45);
         const bodyOuter = new THREE.Mesh(bodyOuterGeo, [createTempTransparentMat(), createTempTransparentMat(), createTempTransparentMat(), createTempTransparentMat(), createTempTransparentMat(), createTempTransparentMat()]);
         bodyOuter.position.set(0, 0.6, 0);
@@ -260,94 +305,100 @@
         group.add(bodyOuter);
         meshes.bodyOuter = bodyOuter;
         
-        // ----- 手臂几何体 -----
-        const armGeo = new THREE.BoxGeometry(0.4, 1.2, 0.4);
-        const armOuterGeo = new THREE.BoxGeometry(0.45, 1.25, 0.45);  // 外层稍大，避免穿模
+        // ----- 腿（两种模型相同）-----
+        function createLegs() {
+            const legGeo = new THREE.BoxGeometry(0.4, 1.2, 0.4);
+            const legOuterGeo = new THREE.BoxGeometry(0.45, 1.25, 0.45);
+            
+            // 左腿
+            const legLeftGroup = new THREE.Group();
+            legLeftGroup.position.set(-0.2, 0, 0);
+            const legLeftMesh = new THREE.Mesh(legGeo, createTempMat());
+            legLeftMesh.position.set(0, -0.6, 0);
+            legLeftGroup.add(legLeftMesh);
+            const legLeftOuterMesh = new THREE.Mesh(legOuterGeo, createTempTransparentMat());
+            legLeftOuterMesh.position.set(0, -0.6, 0);
+            legLeftGroup.add(legLeftOuterMesh);
+            group.add(legLeftGroup);
+            meshes.legLeft = legLeftGroup;
+            meshes.legLeftMesh = legLeftMesh;
+            meshes.legLeftOuterMesh = legLeftOuterMesh;
+            
+            // 右腿
+            const legRightGroup = new THREE.Group();
+            legRightGroup.position.set(0.2, 0, 0);
+            const legRightMesh = new THREE.Mesh(legGeo, createTempMat());
+            legRightMesh.position.set(0, -0.6, 0);
+            legRightGroup.add(legRightMesh);
+            const legRightOuterMesh = new THREE.Mesh(legOuterGeo, createTempTransparentMat());
+            legRightOuterMesh.position.set(0, -0.6, 0);
+            legRightGroup.add(legRightOuterMesh);
+            group.add(legRightGroup);
+            meshes.legRight = legRightGroup;
+            meshes.legRightMesh = legRightMesh;
+            meshes.legRightOuterMesh = legRightOuterMesh;
+        }
         
-        // 左臂：同一个 Group 包含内外层
-        const armLeftGroup = new THREE.Group();
-        armLeftGroup.position.set(-0.6, 1.2, 0);
+        // ----- 创建小（根据模型类型）-----
+        let currentArmLeftGroup = null;
+        let currentArmRightGroup = null;
         
-        const armLeftMesh = new THREE.Mesh(armGeo, createTempMat());
-        armLeftMesh.position.set(0, -0.6, 0);
-        armLeftGroup.add(armLeftMesh);
+        function createArms(modelType) {
+            // 移除旧的手臂
+            if (currentArmLeftGroup) group.remove(currentArmLeftGroup);
+            if (currentArmRightGroup) group.remove(currentArmRightGroup);
+            
+            const size = armSizes[modelType];
+            const armGeo = new THREE.BoxGeometry(size.inner, 1.2, size.inner);
+            const armOuterGeo = new THREE.BoxGeometry(size.outer, 1.25, size.outer);
+            
+            // 左臂
+            const armLeftGroup = new THREE.Group();
+            armLeftGroup.position.set(-size.xOffset, 1.2, 0);
+            const armLeftMesh = new THREE.Mesh(armGeo, createTempMat());
+            armLeftMesh.position.set(0, -0.6, 0);
+            armLeftGroup.add(armLeftMesh);
+            const armLeftOuterMesh = new THREE.Mesh(armOuterGeo, createTempTransparentMat());
+            armLeftOuterMesh.position.set(0, -0.6, 0);
+            armLeftGroup.add(armLeftOuterMesh);
+            group.add(armLeftGroup);
+            meshes.armLeft = armLeftGroup;
+            meshes.armLeftMesh = armLeftMesh;
+            meshes.armLeftOuterMesh = armLeftOuterMesh;
+            currentArmLeftGroup = armLeftGroup;
+            
+            // 右臂
+            const armRightGroup = new THREE.Group();
+            armRightGroup.position.set(size.xOffset, 1.2, 0);
+            const armRightMesh = new THREE.Mesh(armGeo, createTempMat());
+            armRightMesh.position.set(0, -0.6, 0);
+            armRightGroup.add(armRightMesh);
+            const armRightOuterMesh = new THREE.Mesh(armOuterGeo, createTempTransparentMat());
+            armRightOuterMesh.position.set(0, -0.6, 0);
+            armRightGroup.add(armRightOuterMesh);
+            group.add(armRightGroup);
+            meshes.armRight = armRightGroup;
+            meshes.armRightMesh = armRightMesh;
+            meshes.armRightOuterMesh = armRightOuterMesh;
+            currentArmRightGroup = armRightGroup;
+        }
         
-        const armLeftOuterMesh = new THREE.Mesh(armOuterGeo, createTempTransparentMat());
-        armLeftOuterMesh.position.set(0, -0.6, 0);
-        armLeftGroup.add(armLeftOuterMesh);
-        
-        group.add(armLeftGroup);
-        meshes.armLeft = armLeftGroup;
-        meshes.armLeftMesh = armLeftMesh;
-        meshes.armLeftOuterMesh = armLeftOuterMesh;
-        
-        // 右臂
-        const armRightGroup = new THREE.Group();
-        armRightGroup.position.set(0.6, 1.2, 0);
-        
-        const armRightMesh = new THREE.Mesh(armGeo, createTempMat());
-        armRightMesh.position.set(0, -0.6, 0);
-        armRightGroup.add(armRightMesh);
-        
-        const armRightOuterMesh = new THREE.Mesh(armOuterGeo, createTempTransparentMat());
-        armRightOuterMesh.position.set(0, -0.6, 0);
-        armRightGroup.add(armRightOuterMesh);
-        
-        group.add(armRightGroup);
-        meshes.armRight = armRightGroup;
-        meshes.armRightMesh = armRightMesh;
-        meshes.armRightOuterMesh = armRightOuterMesh;
-        
-        // ----- 腿几何体 -----
-        const legGeo = new THREE.BoxGeometry(0.4, 1.2, 0.4);
-        const legOuterGeo = new THREE.BoxGeometry(0.45, 1.25, 0.45);  // 外层稍大
-        
-        // 左腿
-        const legLeftGroup = new THREE.Group();
-        legLeftGroup.position.set(-0.2, 0, 0);
-        
-        const legLeftMesh = new THREE.Mesh(legGeo, createTempMat());
-        legLeftMesh.position.set(0, -0.6, 0);
-        legLeftGroup.add(legLeftMesh);
-        
-        const legLeftOuterMesh = new THREE.Mesh(legOuterGeo, createTempTransparentMat());
-        legLeftOuterMesh.position.set(0, -0.6, 0);
-        legLeftGroup.add(legLeftOuterMesh);
-        
-        group.add(legLeftGroup);
-        meshes.legLeft = legLeftGroup;
-        meshes.legLeftMesh = legLeftMesh;
-        meshes.legLeftOuterMesh = legLeftOuterMesh;
-        
-        // 右腿
-        const legRightGroup = new THREE.Group();
-        legRightGroup.position.set(0.2, 0, 0);
-        
-        const legRightMesh = new THREE.Mesh(legGeo, createTempMat());
-        legRightMesh.position.set(0, -0.6, 0);
-        legRightGroup.add(legRightMesh);
-        
-        const legRightOuterMesh = new THREE.Mesh(legOuterGeo, createTempTransparentMat());
-        legRightOuterMesh.position.set(0, -0.6, 0);
-        legRightGroup.add(legRightOuterMesh);
-        
-        group.add(legRightGroup);
-        meshes.legRight = legRightGroup;
-        meshes.legRightMesh = legRightMesh;
-        meshes.legRightOuterMesh = legRightOuterMesh;
+        // 初始化模型
+        createLegs();
+        createArms(currentModel);
         
         scene.add(group);
         
-        // ========== 动画（只需要旋转 Group，内外层一起转）==========
+        // ========== 动画 ==========
         let time = 0;
         function animate() {
             requestAnimationFrame(animate);
             time += 0.02;
             const t = Math.sin(time);
-            meshes.armLeft.rotation.x = t * 0.523;
-            meshes.armRight.rotation.x = -t * 0.523;
-            meshes.legLeft.rotation.x = -t * 0.4;
-            meshes.legRight.rotation.x = t * 0.4;
+            if (meshes.armLeft) meshes.armLeft.rotation.x = t * 0.523;
+            if (meshes.armRight) meshes.armRight.rotation.x = -t * 0.523;
+            if (meshes.legLeft) meshes.legLeft.rotation.x = -t * 0.4;
+            if (meshes.legRight) meshes.legRight.rotation.x = t * 0.4;
             controls.update();
             renderer.render(scene, camera);
         }
@@ -361,12 +412,39 @@
             renderer.setSize(width, height);
         });
         
+        // ========== 切换模型 ==========
+        function switchModel(modelType) {
+            currentModel = modelType;
+            createArms(currentModel);
+            // 重新应用皮肤
+            if (currentSkinDataUrl) {
+                applySkinToModel(currentSkinDataUrl);
+            }
+        }
+        
+        // Steve/Alex 按钮事件
+        document.getElementById('steveBtn').addEventListener('click', () => {
+            document.getElementById('steveBtn').classList.add('selected');
+            document.getElementById('alexBtn').classList.remove('selected');
+            switchModel(MODEL_STEVE);
+            showMessage('已切换到 Steve 模型（粗壮手臂）', 'info');
+        });
+        document.getElementById('alexBtn').addEventListener('click', () => {
+            document.getElementById('alexBtn').classList.add('selected');
+            document.getElementById('steveBtn').classList.remove('selected');
+            switchModel(MODEL_ALEX);
+            showMessage('已切换到 Alex 模型（纤细手臂）', 'info');
+        });
+        
         // ========== 应用 72 分区皮肤 ==========
+        let currentSkinDataUrl = null;
+        
         function applySkinToModel(imageUrl) {
+            currentSkinDataUrl = imageUrl;
             const img = new Image();
             img.crossOrigin = "Anonymous";
             img.onload = () => {
-                // 头部 6 面（内层）
+                // 头部
                 const headMaterials = [
                     getMaterialFromRegion(img, skinRegions["头右侧内层"]),
                     getMaterialFromRegion(img, skinRegions["头左侧内层"]),
@@ -375,7 +453,6 @@
                     getMaterialFromRegion(img, skinRegions["头正面内层"]),
                     getMaterialFromRegion(img, skinRegions["头背面内层"])
                 ];
-                // 头部外层（帽子）
                 const headOuterMaterials = [
                     getMaterialFromRegion(img, skinRegions["头右侧外层"], true),
                     getMaterialFromRegion(img, skinRegions["头左侧外层"], true),
@@ -384,7 +461,7 @@
                     getMaterialFromRegion(img, skinRegions["头正面外层"], true),
                     getMaterialFromRegion(img, skinRegions["头背面外层"], true)
                 ];
-                // 身体 6 面（内层）
+                // 身体
                 const bodyMaterials = [
                     getMaterialFromRegion(img, skinRegions["身体右侧内层"]),
                     getMaterialFromRegion(img, skinRegions["身体左侧内层"]),
@@ -393,7 +470,6 @@
                     getMaterialFromRegion(img, skinRegions["身体正面内层"]),
                     getMaterialFromRegion(img, skinRegions["身体背面内层"])
                 ];
-                // 身体外层（外套）
                 const bodyOuterMaterials = [
                     getMaterialFromRegion(img, skinRegions["身体右侧外层"], true),
                     getMaterialFromRegion(img, skinRegions["身体左侧外层"], true),
@@ -402,8 +478,7 @@
                     getMaterialFromRegion(img, skinRegions["身体正面外层"], true),
                     getMaterialFromRegion(img, skinRegions["身体背面外层"], true)
                 ];
-                
-                // 左臂 6 面（内层）
+                // 左臂
                 const armLeftMaterials = [
                     getMaterialFromRegion(img, skinRegions["左臂右侧内层"]),
                     getMaterialFromRegion(img, skinRegions["左臂左侧内层"]),
@@ -412,16 +487,6 @@
                     getMaterialFromRegion(img, skinRegions["左臂正面内层"]),
                     getMaterialFromRegion(img, skinRegions["左臂背面内层"])
                 ];
-                // 右臂 6 面（内层）
-                const armRightMaterials = [
-                    getMaterialFromRegion(img, skinRegions["右臂右侧内层"]),
-                    getMaterialFromRegion(img, skinRegions["右臂左侧内层"]),
-                    getMaterialFromRegion(img, skinRegions["右臂顶面内层"]),
-                    getMaterialFromRegion(img, skinRegions["右臂底面内层"]),
-                    getMaterialFromRegion(img, skinRegions["右臂正面内层"]),
-                    getMaterialFromRegion(img, skinRegions["右臂背面内层"])
-                ];
-                // 左臂外层（袖子）
                 const armLeftOuterMaterials = [
                     getMaterialFromRegion(img, skinRegions["左臂右侧外层"], true),
                     getMaterialFromRegion(img, skinRegions["左臂左侧外层"], true),
@@ -430,7 +495,15 @@
                     getMaterialFromRegion(img, skinRegions["左臂正面外层"], true),
                     getMaterialFromRegion(img, skinRegions["左臂背面外层"], true)
                 ];
-                // 右臂外层（袖子）
+                // 右臂
+                const armRightMaterials = [
+                    getMaterialFromRegion(img, skinRegions["右臂右侧内层"]),
+                    getMaterialFromRegion(img, skinRegions["右臂左侧内层"]),
+                    getMaterialFromRegion(img, skinRegions["右臂顶面内层"]),
+                    getMaterialFromRegion(img, skinRegions["右臂底面内层"]),
+                    getMaterialFromRegion(img, skinRegions["右臂正面内层"]),
+                    getMaterialFromRegion(img, skinRegions["右臂背面内层"])
+                ];
                 const armRightOuterMaterials = [
                     getMaterialFromRegion(img, skinRegions["右臂右侧外层"], true),
                     getMaterialFromRegion(img, skinRegions["右臂左侧外层"], true),
@@ -439,8 +512,7 @@
                     getMaterialFromRegion(img, skinRegions["右臂正面外层"], true),
                     getMaterialFromRegion(img, skinRegions["右臂背面外层"], true)
                 ];
-                
-                // 左腿 6 面（内层）
+                // 左腿
                 const legLeftMaterials = [
                     getMaterialFromRegion(img, skinRegions["左腿右侧内层"]),
                     getMaterialFromRegion(img, skinRegions["左腿左侧内层"]),
@@ -449,16 +521,6 @@
                     getMaterialFromRegion(img, skinRegions["左腿正面内层"]),
                     getMaterialFromRegion(img, skinRegions["左腿背面内层"])
                 ];
-                // 右腿 6 面（内层）
-                const legRightMaterials = [
-                    getMaterialFromRegion(img, skinRegions["右腿右侧内层"]),
-                    getMaterialFromRegion(img, skinRegions["右腿左侧内层"]),
-                    getMaterialFromRegion(img, skinRegions["右腿顶面内层"]),
-                    getMaterialFromRegion(img, skinRegions["右腿底面内层"]),
-                    getMaterialFromRegion(img, skinRegions["右腿正面内层"]),
-                    getMaterialFromRegion(img, skinRegions["右腿背面内层"])
-                ];
-                // 左腿外层（裤腿）
                 const legLeftOuterMaterials = [
                     getMaterialFromRegion(img, skinRegions["左腿右侧外层"], true),
                     getMaterialFromRegion(img, skinRegions["左腿左侧外层"], true),
@@ -467,7 +529,15 @@
                     getMaterialFromRegion(img, skinRegions["左腿正面外层"], true),
                     getMaterialFromRegion(img, skinRegions["左腿背面外层"], true)
                 ];
-                // 右腿外层（裤腿）
+                // 右腿
+                const legRightMaterials = [
+                    getMaterialFromRegion(img, skinRegions["右腿右侧内层"]),
+                    getMaterialFromRegion(img, skinRegions["右腿左侧内层"]),
+                    getMaterialFromRegion(img, skinRegions["右腿顶面内层"]),
+                    getMaterialFromRegion(img, skinRegions["右腿底面内层"]),
+                    getMaterialFromRegion(img, skinRegions["右腿正面内层"]),
+                    getMaterialFromRegion(img, skinRegions["右腿背面内层"])
+                ];
                 const legRightOuterMaterials = [
                     getMaterialFromRegion(img, skinRegions["右腿右侧外层"], true),
                     getMaterialFromRegion(img, skinRegions["右腿左侧外层"], true),
@@ -482,18 +552,16 @@
                 meshes.headOuter.material = headOuterMaterials;
                 meshes.body.material = bodyMaterials;
                 meshes.bodyOuter.material = bodyOuterMaterials;
-                
                 meshes.armLeftMesh.material = armLeftMaterials;
                 meshes.armRightMesh.material = armRightMaterials;
                 meshes.armLeftOuterMesh.material = armLeftOuterMaterials;
                 meshes.armRightOuterMesh.material = armRightOuterMaterials;
-                
                 meshes.legLeftMesh.material = legLeftMaterials;
                 meshes.legRightMesh.material = legRightMaterials;
                 meshes.legLeftOuterMesh.material = legLeftOuterMaterials;
                 meshes.legRightOuterMesh.material = legRightOuterMaterials;
                 
-                console.log('✅ 72 分区皮肤已应用（内外层完整，无穿模）');
+                console.log(`✅ ${currentModel === MODEL_STEVE ? 'Steve' : 'Alex'} 模型皮肤已应用`);
             };
             img.onerror = () => console.error('皮肤加载失败:', imageUrl);
             img.src = imageUrl;
