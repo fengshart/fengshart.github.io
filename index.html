@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>Minecraft 皮肤分区编辑器 - Steve/Alex 正确分区</title>
+    <title>Minecraft 皮肤分区编辑器 - Steve/Alex 正确坐标</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { 
@@ -51,7 +51,6 @@
             background: #0f0f1a;
             border-radius: 12px;
             padding: 10px;
-            position: relative;
             overflow: auto;
             text-align: center;
         }
@@ -125,8 +124,6 @@
             font-size: 14px;
             cursor: pointer;
         }
-        
-        .region-group-title:hover { opacity: 0.8; }
         
         .region-buttons {
             display: flex;
@@ -221,7 +218,7 @@
 </head>
 <body>
     <div class="main-container">
-        <h1>🎨 Minecraft 皮肤分区编辑器 — Steve / Alex</h1>
+        <h1>🎨 Minecraft 皮肤分区编辑器 — Steve / Alex 正确坐标</h1>
         
         <div class="editor-layout">
             <div class="canvas-area">
@@ -273,129 +270,127 @@
     </div>
 
     <script>
-        // ========== Steve 模型（粗壮手臂 4px）正确分区 ==========
+        // ==================== Steve 模型（粗手臂 4px）正确分区 ====================
         const steveRegions = {
             // 头内层
-            '头正面内层': { x: 8, y: 8, w: 8, h: 8, group: 'head' },
-            '头背面内层': { x: 24, y: 8, w: 8, h: 8, group: 'head' },
-            '头左侧内层': { x: 0, y: 8, w: 8, h: 8, group: 'head' },
-            '头右侧内层': { x: 16, y: 8, w: 8, h: 8, group: 'head' },
-            '头顶内层': { x: 8, y: 0, w: 8, h: 8, group: 'head' },
-            '头底内层': { x: 16, y: 0, w: 8, h: 8, group: 'head' },
+            "头正面内层": { x: 8, y: 8, w: 8, h: 8, group: 'head' },
+            "头背面内层": { x: 24, y: 8, w: 8, h: 8, group: 'head' },
+            "头左侧内层": { x: 0, y: 8, w: 8, h: 8, group: 'head' },
+            "头右侧内层": { x: 16, y: 8, w: 8, h: 8, group: 'head' },
+            "头顶内层": { x: 8, y: 0, w: 8, h: 8, group: 'head' },
+            "头底内层": { x: 16, y: 0, w: 8, h: 8, group: 'head' },
             // 头外层（帽子）
-            '头正面外层': { x: 8, y: 40, w: 8, h: 8, group: 'hat' },
-            '头背面外层': { x: 24, y: 40, w: 8, h: 8, group: 'hat' },
-            '头左侧外层': { x: 0, y: 40, w: 8, h: 8, group: 'hat' },
-            '头右侧外层': { x: 16, y: 40, w: 8, h: 8, group: 'hat' },
-            '头顶外层': { x: 8, y: 32, w: 8, h: 8, group: 'hat' },
-            '头底外层': { x: 16, y: 32, w: 8, h: 8, group: 'hat' },
+            "头正面外层": { x: 40, y: 8, w: 8, h: 8, group: 'hat' },
+            "头背面外层": { x: 56, y: 8, w: 8, h: 8, group: 'hat' },
+            "头左侧外层": { x: 32, y: 8, w: 8, h: 8, group: 'hat' },
+            "头右侧外层": { x: 48, y: 8, w: 8, h: 8, group: 'hat' },
+            "头顶外层": { x: 40, y: 0, w: 8, h: 8, group: 'hat' },
+            "头底外层": { x: 48, y: 0, w: 8, h: 8, group: 'hat' },
             // 身体内层
-            '身体正面内层': { x: 20, y: 20, w: 8, h: 12, group: 'body' },
-            '身体背面内层': { x: 28, y: 20, w: 8, h: 12, group: 'body' },
-            '身体左侧内层': { x: 16, y: 20, w: 4, h: 12, group: 'body' },
-            '身体右侧内层': { x: 24, y: 20, w: 4, h: 12, group: 'body' },
-            '身体顶面内层': { x: 20, y: 16, w: 8, h: 4, group: 'body' },
-            '身体底面内层': { x: 20, y: 32, w: 8, h: 4, group: 'body' },
+            "身体正面内层": { x: 20, y: 20, w: 8, h: 12, group: 'body' },
+            "身体背面内层": { x: 28, y: 20, w: 8, h: 12, group: 'body' },
+            "身体左侧内层": { x: 16, y: 20, w: 4, h: 12, group: 'body' },
+            "身体右侧内层": { x: 24, y: 20, w: 4, h: 12, group: 'body' },
+            "身体顶面内层": { x: 20, y: 16, w: 8, h: 4, group: 'body' },
+            "身体底面内层": { x: 20, y: 32, w: 8, h: 4, group: 'body' },
             // 身体外层（外套）
-            '身体正面外层': { x: 20, y: 52, w: 8, h: 12, group: 'jacket' },
-            '身体背面外层': { x: 28, y: 52, w: 8, h: 12, group: 'jacket' },
-            '身体左侧外层': { x: 16, y: 52, w: 4, h: 12, group: 'jacket' },
-            '身体右侧外层': { x: 24, y: 52, w: 4, h: 12, group: 'jacket' },
-            '身体顶面外层': { x: 20, y: 48, w: 8, h: 4, group: 'jacket' },
-            '身体底面外层': { x: 20, y: 64, w: 8, h: 4, group: 'jacket' },
+            "身体正面外层": { x: 20, y: 36, w: 8, h: 12, group: 'jacket' },
+            "身体背面外层": { x: 28, y: 36, w: 8, h: 12, group: 'jacket' },
+            "身体左侧外层": { x: 16, y: 36, w: 4, h: 12, group: 'jacket' },
+            "身体右侧外层": { x: 24, y: 36, w: 4, h: 12, group: 'jacket' },
+            "身体顶面外层": { x: 20, y: 32, w: 8, h: 4, group: 'jacket' },
+            "身体底面外层": { x: 20, y: 48, w: 8, h: 4, group: 'jacket' },
             // 右臂内层 (Steve: 4px 宽)
-            '右臂正面内层': { x: 40, y: 20, w: 4, h: 12, group: 'rightArm' },
-            '右臂背面内层': { x: 44, y: 20, w: 4, h: 12, group: 'rightArm' },
-            '右臂左侧内层': { x: 36, y: 20, w: 4, h: 12, group: 'rightArm' },
-            '右臂右侧内层': { x: 48, y: 20, w: 4, h: 12, group: 'rightArm' },
-            '右臂顶面内层': { x: 40, y: 16, w: 4, h: 4, group: 'rightArm' },
-            '右臂底面内层': { x: 40, y: 32, w: 4, h: 4, group: 'rightArm' },
+            "右臂正面内层": { x: 40, y: 20, w: 4, h: 12, group: 'rightArm' },
+            "右臂背面内层": { x: 44, y: 20, w: 4, h: 12, group: 'rightArm' },
+            "右臂左侧内层": { x: 36, y: 20, w: 4, h: 12, group: 'rightArm' },
+            "右臂右侧内层": { x: 44, y: 20, w: 4, h: 12, group: 'rightArm' },
+            "右臂顶面内层": { x: 40, y: 16, w: 4, h: 4, group: 'rightArm' },
+            "右臂底面内层": { x: 40, y: 32, w: 4, h: 4, group: 'rightArm' },
             // 右臂外层（袖子）
-            '右臂正面外层': { x: 40, y: 52, w: 4, h: 12, group: 'rightSleeve' },
-            '右臂背面外层': { x: 44, y: 52, w: 4, h: 12, group: 'rightSleeve' },
-            '右臂左侧外层': { x: 36, y: 52, w: 4, h: 12, group: 'rightSleeve' },
-            '右臂右侧外层': { x: 48, y: 52, w: 4, h: 12, group: 'rightSleeve' },
-            '右臂顶面外层': { x: 40, y: 48, w: 4, h: 4, group: 'rightSleeve' },
-            '右臂底面外层': { x: 40, y: 64, w: 4, h: 4, group: 'rightSleeve' },
+            "右臂正面外层": { x: 40, y: 36, w: 4, h: 12, group: 'rightSleeve' },
+            "右臂背面外层": { x: 44, y: 36, w: 4, h: 12, group: 'rightSleeve' },
+            "右臂左侧外层": { x: 36, y: 36, w: 4, h: 12, group: 'rightSleeve' },
+            "右臂右侧外层": { x: 44, y: 36, w: 4, h: 12, group: 'rightSleeve' },
+            "右臂顶面外层": { x: 40, y: 32, w: 4, h: 4, group: 'rightSleeve' },
+            "右臂底面外层": { x: 40, y: 48, w: 4, h: 4, group: 'rightSleeve' },
             // 左臂内层 (Steve: 4px 宽)
-            '左臂正面内层': { x: 36, y: 20, w: 4, h: 12, group: 'leftArm' },
-            '左臂背面内层': { x: 32, y: 20, w: 4, h: 12, group: 'leftArm' },
-            '左臂左侧内层': { x: 28, y: 20, w: 4, h: 12, group: 'leftArm' },
-            '左臂右侧内层': { x: 40, y: 20, w: 4, h: 12, group: 'leftArm' },
-            '左臂顶面内层': { x: 36, y: 16, w: 4, h: 4, group: 'leftArm' },
-            '左臂底面内层': { x: 36, y: 32, w: 4, h: 4, group: 'leftArm' },
+            "左臂正面内层": { x: 36, y: 20, w: 4, h: 12, group: 'leftArm' },
+            "左臂背面内层": { x: 32, y: 20, w: 4, h: 12, group: 'leftArm' },
+            "左臂左侧内层": { x: 32, y: 20, w: 4, h: 12, group: 'leftArm' },
+            "左臂右侧内层": { x: 36, y: 20, w: 4, h: 12, group: 'leftArm' },
+            "左臂顶面内层": { x: 36, y: 16, w: 4, h: 4, group: 'leftArm' },
+            "左臂底面内层": { x: 36, y: 32, w: 4, h: 4, group: 'leftArm' },
             // 左臂外层（袖子）
-            '左臂正面外层': { x: 36, y: 52, w: 4, h: 12, group: 'leftSleeve' },
-            '左臂背面外层': { x: 32, y: 52, w: 4, h: 12, group: 'leftSleeve' },
-            '左臂左侧外层': { x: 28, y: 52, w: 4, h: 12, group: 'leftSleeve' },
-            '左臂右侧外层': { x: 40, y: 52, w: 4, h: 12, group: 'leftSleeve' },
-            '左臂顶面外层': { x: 36, y: 48, w: 4, h: 4, group: 'leftSleeve' },
-            '左臂底面外层': { x: 36, y: 64, w: 4, h: 4, group: 'leftSleeve' },
-            // 右腿内层
-            '右腿正面内层': { x: 4, y: 20, w: 4, h: 12, group: 'rightLeg' },
-            '右腿背面内层': { x: 8, y: 20, w: 4, h: 12, group: 'rightLeg' },
-            '右腿左侧内层': { x: 0, y: 20, w: 4, h: 12, group: 'rightLeg' },
-            '右腿右侧内层': { x: 12, y: 20, w: 4, h: 12, group: 'rightLeg' },
-            '右腿顶面内层': { x: 4, y: 16, w: 4, h: 4, group: 'rightLeg' },
-            '右腿底面内层': { x: 4, y: 32, w: 4, h: 4, group: 'rightLeg' },
-            // 右腿外层
-            '右腿正面外层': { x: 4, y: 52, w: 4, h: 12, group: 'rightPants' },
-            '右腿背面外层': { x: 8, y: 52, w: 4, h: 12, group: 'rightPants' },
-            '右腿左侧外层': { x: 0, y: 52, w: 4, h: 12, group: 'rightPants' },
-            '右腿右侧外层': { x: 12, y: 52, w: 4, h: 12, group: 'rightPants' },
-            '右腿顶面外层': { x: 4, y: 48, w: 4, h: 4, group: 'rightPants' },
-            '右腿底面外层': { x: 4, y: 64, w: 4, h: 4, group: 'rightPants' },
-            // 左腿内层
-            '左腿正面内层': { x: 0, y: 20, w: 4, h: 12, group: 'leftLeg' },
-            '左腿背面内层': { x: 4, y: 20, w: 4, h: 12, group: 'leftLeg' },
-            '左腿左侧内层': { x: -4, y: 20, w: 4, h: 12, group: 'leftLeg' },
-            '左腿右侧内层': { x: 8, y: 20, w: 4, h: 12, group: 'leftLeg' },
-            '左腿顶面内层': { x: 0, y: 16, w: 4, h: 4, group: 'leftLeg' },
-            '左腿底面内层': { x: 0, y: 32, w: 4, h: 4, group: 'leftLeg' },
-            // 左腿外层
-            '左腿正面外层': { x: 0, y: 52, w: 4, h: 12, group: 'leftPants' },
-            '左腿背面外层': { x: 4, y: 52, w: 4, h: 12, group: 'leftPants' },
-            '左腿左侧外层': { x: -4, y: 52, w: 4, h: 12, group: 'leftPants' },
-            '左腿右侧外层': { x: 8, y: 52, w: 4, h: 12, group: 'leftPants' },
-            '左腿顶面外层': { x: 0, y: 48, w: 4, h: 4, group: 'leftPants' },
-            '左腿底面外层': { x: 0, y: 64, w: 4, h: 4, group: 'leftPants' }
+            "左臂正面外层": { x: 36, y: 36, w: 4, h: 12, group: 'leftSleeve' },
+            "左臂背面外层": { x: 32, y: 36, w: 4, h: 12, group: 'leftSleeve' },
+            "左臂左侧外层": { x: 32, y: 36, w: 4, h: 12, group: 'leftSleeve' },
+            "左臂右侧外层": { x: 36, y: 36, w: 4, h: 12, group: 'leftSleeve' },
+            "左臂顶面外层": { x: 36, y: 32, w: 4, h: 4, group: 'leftSleeve' },
+            "左臂底面外层": { x: 36, y: 48, w: 4, h: 4, group: 'leftSleeve' },
+            // 右腿
+            "右腿正面内层": { x: 4, y: 20, w: 4, h: 12, group: 'rightLeg' },
+            "右腿背面内层": { x: 8, y: 20, w: 4, h: 12, group: 'rightLeg' },
+            "右腿左侧内层": { x: 0, y: 20, w: 4, h: 12, group: 'rightLeg' },
+            "右腿右侧内层": { x: 8, y: 20, w: 4, h: 12, group: 'rightLeg' },
+            "右腿顶面内层": { x: 4, y: 16, w: 4, h: 4, group: 'rightLeg' },
+            "右腿底面内层": { x: 4, y: 32, w: 4, h: 4, group: 'rightLeg' },
+            "右腿正面外层": { x: 4, y: 36, w: 4, h: 12, group: 'rightPants' },
+            "右腿背面外层": { x: 8, y: 36, w: 4, h: 12, group: 'rightPants' },
+            "右腿左侧外层": { x: 0, y: 36, w: 4, h: 12, group: 'rightPants' },
+            "右腿右侧外层": { x: 8, y: 36, w: 4, h: 12, group: 'rightPants' },
+            "右腿顶面外层": { x: 4, y: 32, w: 4, h: 4, group: 'rightPants' },
+            "右腿底面外层": { x: 4, y: 48, w: 4, h: 4, group: 'rightPants' },
+            // 左腿
+            "左腿正面内层": { x: 20, y: 20, w: 4, h: 12, group: 'leftLeg' },
+            "左腿背面内层": { x: 24, y: 20, w: 4, h: 12, group: 'leftLeg' },
+            "左腿左侧内层": { x: 16, y: 20, w: 4, h: 12, group: 'leftLeg' },
+            "左腿右侧内层": { x: 24, y: 20, w: 4, h: 12, group: 'leftLeg' },
+            "左腿顶面内层": { x: 20, y: 16, w: 4, h: 4, group: 'leftLeg' },
+            "左腿底面内层": { x: 20, y: 32, w: 4, h: 4, group: 'leftLeg' },
+            "左腿正面外层": { x: 20, y: 36, w: 4, h: 12, group: 'leftPants' },
+            "左腿背面外层": { x: 24, y: 36, w: 4, h: 12, group: 'leftPants' },
+            "左腿左侧外层": { x: 16, y: 36, w: 4, h: 12, group: 'leftPants' },
+            "左腿右侧外层": { x: 24, y: 36, w: 4, h: 12, group: 'leftPants' },
+            "左腿顶面外层": { x: 20, y: 32, w: 4, h: 4, group: 'leftPants' },
+            "左腿底面外层": { x: 20, y: 48, w: 4, h: 4, group: 'leftPants' }
         };
         
-        // ========== Alex 模型（纤细手臂 3px 宽）正确分区 ==========
-        // 继承 Steve 的所有分区，只修改手臂相关坐标
+        // ==================== Alex 模型（细手臂 3px 宽）正确分区 ====================
+        // 基于 Steve 复制，只修改手臂相关坐标
         const alexRegions = JSON.parse(JSON.stringify(steveRegions));
         
-        // 修改右臂内层 (Alex: 3px 宽)
-        alexRegions['右臂正面内层'] = { x: 40, y: 20, w: 3, h: 12, group: 'rightArm' };
-        alexRegions['右臂背面内层'] = { x: 43, y: 20, w: 3, h: 12, group: 'rightArm' };
-        alexRegions['右臂左侧内层'] = { x: 36, y: 20, w: 4, h: 12, group: 'rightArm' };
-        alexRegions['右臂右侧内层'] = { x: 43, y: 20, w: 1, h: 12, group: 'rightArm' };
-        alexRegions['右臂顶面内层'] = { x: 40, y: 16, w: 3, h: 4, group: 'rightArm' };
-        alexRegions['右臂底面内层'] = { x: 40, y: 32, w: 3, h: 4, group: 'rightArm' };
+        // 右臂内层 (Alex: 正面/背面 3px，左侧/右侧保持 4px/1px，顶面/底面 3×4)
+        alexRegions["右臂正面内层"] = { x: 40, y: 20, w: 3, h: 12, group: 'rightArm' };
+        alexRegions["右臂背面内层"] = { x: 43, y: 20, w: 3, h: 12, group: 'rightArm' };
+        alexRegions["右臂左侧内层"] = { x: 36, y: 20, w: 4, h: 12, group: 'rightArm' };
+        alexRegions["右臂右侧内层"] = { x: 43, y: 20, w: 1, h: 12, group: 'rightArm' };
+        alexRegions["右臂顶面内层"] = { x: 40, y: 16, w: 3, h: 4, group: 'rightArm' };
+        alexRegions["右臂底面内层"] = { x: 40, y: 32, w: 3, h: 4, group: 'rightArm' };
         
-        // 修改右臂外层 (Alex: 3px 宽)
-        alexRegions['右臂正面外层'] = { x: 40, y: 52, w: 3, h: 12, group: 'rightSleeve' };
-        alexRegions['右臂背面外层'] = { x: 43, y: 52, w: 3, h: 12, group: 'rightSleeve' };
-        alexRegions['右臂左侧外层'] = { x: 36, y: 52, w: 4, h: 12, group: 'rightSleeve' };
-        alexRegions['右臂右侧外层'] = { x: 43, y: 52, w: 1, h: 12, group: 'rightSleeve' };
-        alexRegions['右臂顶面外层'] = { x: 40, y: 48, w: 3, h: 4, group: 'rightSleeve' };
-        alexRegions['右臂底面外层'] = { x: 40, y: 64, w: 3, h: 4, group: 'rightSleeve' };
+        // 右臂外层（袖子）
+        alexRegions["右臂正面外层"] = { x: 40, y: 36, w: 3, h: 12, group: 'rightSleeve' };
+        alexRegions["右臂背面外层"] = { x: 43, y: 36, w: 3, h: 12, group: 'rightSleeve' };
+        alexRegions["右臂左侧外层"] = { x: 36, y: 36, w: 4, h: 12, group: 'rightSleeve' };
+        alexRegions["右臂右侧外层"] = { x: 43, y: 36, w: 1, h: 12, group: 'rightSleeve' };
+        alexRegions["右臂顶面外层"] = { x: 40, y: 32, w: 3, h: 4, group: 'rightSleeve' };
+        alexRegions["右臂底面外层"] = { x: 40, y: 48, w: 3, h: 4, group: 'rightSleeve' };
         
-        // 修改左臂内层 (Alex: 3px 宽)
-        alexRegions['左臂正面内层'] = { x: 36, y: 20, w: 3, h: 12, group: 'leftArm' };
-        alexRegions['左臂背面内层'] = { x: 39, y: 20, w: 3, h: 12, group: 'leftArm' };
-        alexRegions['左臂左侧内层'] = { x: 32, y: 20, w: 4, h: 12, group: 'leftArm' };
-        alexRegions['左臂右侧内层'] = { x: 39, y: 20, w: 1, h: 12, group: 'leftArm' };
-        alexRegions['左臂顶面内层'] = { x: 36, y: 16, w: 3, h: 4, group: 'leftArm' };
-        alexRegions['左臂底面内层'] = { x: 36, y: 32, w: 3, h: 4, group: 'leftArm' };
+        // 左臂内层 (Alex: 正面/背面 3px)
+        alexRegions["左臂正面内层"] = { x: 36, y: 20, w: 3, h: 12, group: 'leftArm' };
+        alexRegions["左臂背面内层"] = { x: 39, y: 20, w: 3, h: 12, group: 'leftArm' };
+        alexRegions["左臂左侧内层"] = { x: 32, y: 20, w: 4, h: 12, group: 'leftArm' };
+        alexRegions["左臂右侧内层"] = { x: 39, y: 20, w: 1, h: 12, group: 'leftArm' };
+        alexRegions["左臂顶面内层"] = { x: 36, y: 16, w: 3, h: 4, group: 'leftArm' };
+        alexRegions["左臂底面内层"] = { x: 36, y: 32, w: 3, h: 4, group: 'leftArm' };
         
-        // 修改左臂外层 (Alex: 3px 宽)
-        alexRegions['左臂正面外层'] = { x: 36, y: 52, w: 3, h: 12, group: 'leftSleeve' };
-        alexRegions['左臂背面外层'] = { x: 39, y: 52, w: 3, h: 12, group: 'leftSleeve' };
-        alexRegions['左臂左侧外层'] = { x: 32, y: 52, w: 4, h: 12, group: 'leftSleeve' };
-        alexRegions['左臂右侧外层'] = { x: 39, y: 52, w: 1, h: 12, group: 'leftSleeve' };
-        alexRegions['左臂顶面外层'] = { x: 36, y: 48, w: 3, h: 4, group: 'leftSleeve' };
-        alexRegions['左臂底面外层'] = { x: 36, y: 64, w: 3, h: 4, group: 'leftSleeve' };
+        // 左臂外层（袖子）
+        alexRegions["左臂正面外层"] = { x: 36, y: 36, w: 3, h: 12, group: 'leftSleeve' };
+        alexRegions["左臂背面外层"] = { x: 39, y: 36, w: 3, h: 12, group: 'leftSleeve' };
+        alexRegions["左臂左侧外层"] = { x: 32, y: 36, w: 4, h: 12, group: 'leftSleeve' };
+        alexRegions["左臂右侧外层"] = { x: 39, y: 36, w: 1, h: 12, group: 'leftSleeve' };
+        alexRegions["左臂顶面外层"] = { x: 36, y: 32, w: 3, h: 4, group: 'leftSleeve' };
+        alexRegions["左臂底面外层"] = { x: 36, y: 48, w: 3, h: 4, group: 'leftSleeve' };
         
         // 当前使用的分区
         let currentRegions = steveRegions;
