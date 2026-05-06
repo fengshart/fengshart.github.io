@@ -11,7 +11,7 @@
         .right-panel { flex: 2; min-width: 500px; background: white; border-radius: 16px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
         .form-group { margin-bottom: 20px; }
         label { display: block; font-weight: bold; margin-bottom: 8px; color: #333; }
-        textarea, select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; }
+        textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; font-family: inherit; resize: vertical; }
         button { background: #007bff; color: white; padding: 12px 24px; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; width: 100%; }
         button:hover { background: #0056b3; }
         #canvas-container { width: 100%; height: 450px; background: #1a1a2e; border-radius: 16px; overflow: hidden; cursor: grab; margin-bottom: 20px; }
@@ -31,47 +31,67 @@
         .model-btn.selected { background: #007bff; color: white; }
         .upload-skin-btn { background: #28a745; color: white; padding: 8px 16px; border-radius: 8px; cursor: pointer; border: none; margin-left: 10px; }
         
-        /* 图片上传区域 */
-        .image-upload-area {
-            border: 2px dashed #ddd;
-            border-radius: 12px;
-            padding: 20px;
-            text-align: center;
-            margin-bottom: 20px;
-            cursor: pointer;
-            transition: all 0.2s;
-            background: #fafafa;
+        /* 类似对话框的输入区域 */
+        .chat-input-area {
+            border: 1px solid #ddd;
+            border-radius: 16px;
+            overflow: hidden;
+            background: white;
         }
-        .image-upload-area:hover { border-color: #007bff; background: #f0f8ff; }
-        .image-upload-area.has-image { border-color: #28a745; background: #f0fff4; }
-        .upload-preview { max-width: 100%; max-height: 150px; margin-top: 10px; border-radius: 8px; }
-        .remove-image-btn {
-            background: #dc3545;
-            color: white;
+        .chat-textarea {
+            width: 100%;
             border: none;
-            padding: 4px 12px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 12px;
-            margin-top: 8px;
+            padding: 16px;
+            font-size: 14px;
+            font-family: inherit;
+            resize: vertical;
+            outline: none;
         }
-        .generate-type-selector {
+        .chat-textarea:focus { outline: none; }
+        .attachment-area {
             display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 16px 12px 16px;
+            border-top: 1px solid #eee;
+            flex-wrap: wrap;
             gap: 10px;
-            margin-bottom: 15px;
         }
-        .type-btn {
-            flex: 1;
-            padding: 8px;
-            text-align: center;
-            background: #e9ecef;
-            border-radius: 8px;
+        .attach-btn {
+            background: none;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            padding: 6px 14px;
             cursor: pointer;
+            font-size: 13px;
+            width: auto;
+            color: #666;
         }
-        .type-btn.selected {
-            background: #007bff;
+        .attach-btn:hover { background: #f5f5f5; border-color: #007bff; color: #007bff; }
+        .image-preview-area {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .preview-thumb {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            object-fit: cover;
+            border: 1px solid #ddd;
+        }
+        .remove-attach-btn {
+            background: #dc3545;
+            border: none;
+            border-radius: 20px;
+            padding: 4px 12px;
+            font-size: 12px;
+            width: auto;
             color: white;
         }
+        .remove-attach-btn:hover { background: #c82333; }
+        .attach-info { font-size: 12px; color: #28a745; }
         @media (max-width: 768px) { .left-panel, .right-panel { min-width: auto; } }
     </style>
 </head>
@@ -86,37 +106,20 @@
                 <input type="file" id="skinFileInput" accept="image/png" style="display:none">
             </div>
             
-            <!-- 生成类型选择 -->
-            <div class="generate-type-selector">
-                <div id="textTypeBtn" class="type-btn selected">📝 文字生成</div>
-                <div id="imageTypeBtn" class="type-btn">🖼️ 图片生成</div>
-            </div>
-            
-            <!-- 文字生成区域 -->
-            <div id="textGenerateArea">
-                <div class="form-group">
-                    <label>🎭 角色描述</label>
-                    <textarea rows="4" placeholder="例如：穿着红色披风的忍者、太空宇航员、中国古风侠客..." id="prompt"></textarea>
-                </div>
-            </div>
-            
-            <!-- 图片生成区域（默认隐藏） -->
-            <div id="imageGenerateArea" style="display: none;">
-                <div class="form-group">
-                    <label>🖼️ 上传参考图片</label>
-                    <div id="imageUploadArea" class="image-upload-area">
-                        📁 点击或拖拽上传图片
-                        <input type="file" id="refImageInput" accept="image/*" style="display:none">
-                        <div id="imagePreview"></div>
-                    </div>
-                    <div class="form-group" style="margin-top: 10px;">
-                        <label>➕ 补充描述（可选）</label>
-                        <textarea rows="2" placeholder="例如：红色披风、金色铠甲..." id="imagePrompt"></textarea>
+            <!-- 类似对话框的输入区域 -->
+            <div class="chat-input-area">
+                <textarea class="chat-textarea" id="promptInput" rows="3" placeholder="描述你想要的角色...&#10;例如：穿着红色披风的忍者、太空宇航员、中国古风侠客..."></textarea>
+                <div class="attachment-area">
+                    <div class="image-preview-area" id="imagePreviewArea"></div>
+                    <div style="display: flex; gap: 8px;">
+                        <button type="button" class="attach-btn" id="attachImageBtn">📎 附带图片</button>
+                        <button type="button" class="attach-btn" id="clearAttachBtn" style="display:none;">✖ 清除</button>
                     </div>
                 </div>
             </div>
+            <input type="file" id="attachFileInput" accept="image/*" style="display:none">
             
-            <button id="generateBtn">✨ 生成皮肤</button>
+            <button id="generateBtn" style="margin-top: 16px;">✨ 生成皮肤</button>
             <div id="msg" class="status-msg"></div>
             <div class="demand-list">
                 <h3>📋 历史记录</h3>
@@ -154,8 +157,7 @@
         
         // ========== API 配置 ==========
         // 修改为你的本地服务器地址（使用 ngrok 后的地址）
-        // 例如: https://abc123.ngrok.io
-        const API_BASE = 'http://localhost:5000';  // 本地测试用，部署时改成 ngrok 地址
+        const API_BASE = 'http://localhost:5000';
         
         // ==================== Steve 模型正确分区 ====================
         const steveSkinRegions = {
@@ -234,33 +236,32 @@
         };
         
         // ==================== Alex 模型正确分区 ====================
-        const alexSkinRegions = {
-            ...steveSkinRegions,
-            "右臂正面内层": { x: 44, y: 20, w: 3, h: 12 },
-            "右臂背面内层": { x: 51, y: 20, w: 3, h: 12 },
-            "右臂左侧内层": { x: 40, y: 20, w: 4, h: 12 },
-            "右臂右侧内层": { x: 47, y: 20, w: 4, h: 12 },
-            "右臂顶面内层": { x: 44, y: 16, w: 3, h: 4 },
-            "右臂底面内层": { x: 47, y: 16, w: 3, h: 4 },
-            "右臂正面外层": { x: 44, y: 36, w: 3, h: 12 },
-            "右臂背面外层": { x: 51, y: 36, w: 3, h: 12 },
-            "右臂左侧外层": { x: 40, y: 36, w: 4, h: 12 },
-            "右臂右侧外层": { x: 47, y: 36, w: 4, h: 12 },
-            "右臂顶面外层": { x: 44, y: 32, w: 3, h: 4 },
-            "右臂底面外层": { x: 47, y: 32, w: 3, h: 4 },
-            "左臂正面内层": { x: 36, y: 52, w: 3, h: 12 },
-            "左臂背面内层": { x: 43, y: 52, w: 3, h: 12 },
-            "左臂左侧内层": { x: 32, y: 52, w: 4, h: 12 },
-            "左臂右侧内层": { x: 39, y: 52, w: 4, h: 12 },
-            "左臂顶面内层": { x: 36, y: 48, w: 3, h: 4 },
-            "左臂底面内层": { x: 39, y: 48, w: 3, h: 4 },
-            "左臂正面外层": { x: 52, y: 52, w: 3, h: 12 },
-            "左臂背面外层": { x: 59, y: 52, w: 3, h: 12 },
-            "左臂左侧外层": { x: 48, y: 52, w: 4, h: 12 },
-            "左臂右侧外层": { x: 55, y: 52, w: 4, h: 12 },
-            "左臂顶面外层": { x: 55, y: 48, w: 3, h: 4 },
-            "左臂底面外层": { x: 52, y: 48, w: 3, h: 4 }
-        };
+        const alexSkinRegions = { ...steveSkinRegions };
+        // 修改手臂为 3px 宽
+        alexSkinRegions["右臂正面内层"] = { x: 44, y: 20, w: 3, h: 12 };
+        alexSkinRegions["右臂背面内层"] = { x: 51, y: 20, w: 3, h: 12 };
+        alexSkinRegions["右臂左侧内层"] = { x: 40, y: 20, w: 4, h: 12 };
+        alexSkinRegions["右臂右侧内层"] = { x: 47, y: 20, w: 4, h: 12 };
+        alexSkinRegions["右臂顶面内层"] = { x: 44, y: 16, w: 3, h: 4 };
+        alexSkinRegions["右臂底面内层"] = { x: 47, y: 16, w: 3, h: 4 };
+        alexSkinRegions["右臂正面外层"] = { x: 44, y: 36, w: 3, h: 12 };
+        alexSkinRegions["右臂背面外层"] = { x: 51, y: 36, w: 3, h: 12 };
+        alexSkinRegions["右臂左侧外层"] = { x: 40, y: 36, w: 4, h: 12 };
+        alexSkinRegions["右臂右侧外层"] = { x: 47, y: 36, w: 4, h: 12 };
+        alexSkinRegions["右臂顶面外层"] = { x: 44, y: 32, w: 3, h: 4 };
+        alexSkinRegions["右臂底面外层"] = { x: 47, y: 32, w: 3, h: 4 };
+        alexSkinRegions["左臂正面内层"] = { x: 36, y: 52, w: 3, h: 12 };
+        alexSkinRegions["左臂背面内层"] = { x: 43, y: 52, w: 3, h: 12 };
+        alexSkinRegions["左臂左侧内层"] = { x: 32, y: 52, w: 4, h: 12 };
+        alexSkinRegions["左臂右侧内层"] = { x: 39, y: 52, w: 4, h: 12 };
+        alexSkinRegions["左臂顶面内层"] = { x: 36, y: 48, w: 3, h: 4 };
+        alexSkinRegions["左臂底面内层"] = { x: 39, y: 48, w: 3, h: 4 };
+        alexSkinRegions["左臂正面外层"] = { x: 52, y: 52, w: 3, h: 12 };
+        alexSkinRegions["左臂背面外层"] = { x: 59, y: 52, w: 3, h: 12 };
+        alexSkinRegions["左臂左侧外层"] = { x: 48, y: 52, w: 4, h: 12 };
+        alexSkinRegions["左臂右侧外层"] = { x: 55, y: 52, w: 4, h: 12 };
+        alexSkinRegions["左臂顶面外层"] = { x: 55, y: 48, w: 3, h: 4 };
+        alexSkinRegions["左臂底面外层"] = { x: 52, y: 48, w: 3, h: 4 };
         
         // ========== 模型参数 ==========
         const MODEL_STEVE = 'steve';
@@ -273,9 +274,8 @@
             [MODEL_ALEX]: { inner: 0.3, outer: 0.35, xOffset: 0.55 }
         };
         
-        // 生成类型
-        let generateType = 'text'; // 'text' 或 'image'
-        let uploadedImageData = null;
+        // 附带的图片数据
+        let attachedImageData = null;
         
         // ========== 辅助函数 ==========
         function getMaterialFromRegion(img, region, useTransparent = false) {
@@ -600,7 +600,7 @@
             console.log(`✅ ${currentModel === MODEL_STEVE ? 'Steve' : 'Alex'} 皮肤已应用`);
         }
         
-        // 上传皮肤文件（用户自己的皮肤）
+        // 上传用户自己的皮肤文件
         document.getElementById('uploadSkinBtn').onclick = () => document.getElementById('skinFileInput').click();
         document.getElementById('skinFileInput').onchange = (e) => {
             const file = e.target.files[0];
@@ -615,163 +615,94 @@
             }
         };
         
-        // ========== 图片上传区域逻辑 ==========
-        const imageUploadArea = document.getElementById('imageUploadArea');
-        const refImageInput = document.getElementById('refImageInput');
-        const imagePreview = document.getElementById('imagePreview');
+        // ========== 图片附件逻辑 ==========
+        const attachImageBtn = document.getElementById('attachImageBtn');
+        const attachFileInput = document.getElementById('attachFileInput');
+        const imagePreviewArea = document.getElementById('imagePreviewArea');
+        const clearAttachBtn = document.getElementById('clearAttachBtn');
         
-        imageUploadArea.onclick = () => refImageInput.click();
+        attachImageBtn.onclick = () => attachFileInput.click();
         
-        // 拖拽上传
-        imageUploadArea.ondragover = (e) => {
-            e.preventDefault();
-            imageUploadArea.style.borderColor = '#007bff';
-        };
-        imageUploadArea.ondragleave = () => {
-            imageUploadArea.style.borderColor = '#ddd';
-        };
-        imageUploadArea.ondrop = (e) => {
-            e.preventDefault();
-            imageUploadArea.style.borderColor = '#ddd';
-            const file = e.dataTransfer.files[0];
-            if (file && file.type.startsWith('image/')) {
-                handleImageFile(file);
+        attachFileInput.onchange = (e) => {
+            if (e.target.files[0]) {
+                const file = e.target.files[0];
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    attachedImageData = ev.target.result;
+                    imagePreviewArea.innerHTML = `
+                        <img src="${attachedImageData}" class="preview-thumb">
+                        <span class="attach-info">已附带1张图片</span>
+                    `;
+                    clearAttachBtn.style.display = 'inline-block';
+                    attachImageBtn.textContent = '📎 更换图片';
+                };
+                reader.readAsDataURL(file);
             }
         };
         
-        refImageInput.onchange = (e) => {
-            if (e.target.files[0]) handleImageFile(e.target.files[0]);
-        };
-        
-        function handleImageFile(file) {
-            const reader = new FileReader();
-            reader.onload = (ev) => {
-                uploadedImageData = ev.target.result;
-                imagePreview.innerHTML = `
-                    <img src="${uploadedImageData}" class="upload-preview">
-                    <br>
-                    <button class="remove-image-btn" id="removeImageBtn">✖ 移除图片</button>
-                `;
-                imageUploadArea.classList.add('has-image');
-                document.getElementById('removeImageBtn')?.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    uploadedImageData = null;
-                    imagePreview.innerHTML = '';
-                    imageUploadArea.classList.remove('has-image');
-                    refImageInput.value = '';
-                });
-            };
-            reader.readAsDataURL(file);
-        }
-        
-        // ========== 生成类型切换 ==========
-        const textTypeBtn = document.getElementById('textTypeBtn');
-        const imageTypeBtn = document.getElementById('imageTypeBtn');
-        const textGenerateArea = document.getElementById('textGenerateArea');
-        const imageGenerateArea = document.getElementById('imageGenerateArea');
-        
-        textTypeBtn.onclick = () => {
-            generateType = 'text';
-            textTypeBtn.classList.add('selected');
-            imageTypeBtn.classList.remove('selected');
-            textGenerateArea.style.display = 'block';
-            imageGenerateArea.style.display = 'none';
-        };
-        
-        imageTypeBtn.onclick = () => {
-            generateType = 'image';
-            textTypeBtn.classList.remove('selected');
-            imageTypeBtn.classList.add('selected');
-            textGenerateArea.style.display = 'none';
-            imageGenerateArea.style.display = 'block';
+        clearAttachBtn.onclick = () => {
+            attachedImageData = null;
+            imagePreviewArea.innerHTML = '';
+            clearAttachBtn.style.display = 'none';
+            attachImageBtn.textContent = '📎 附带图片';
+            attachFileInput.value = '';
         };
         
         // ========== AI 生成皮肤（发送到本地服务器）==========
         async function generateSkin() {
+            const prompt = document.getElementById('promptInput').value.trim();
+            if (!prompt && !attachedImageData) {
+                showMessage('请填写描述或附带图片', 'error');
+                return;
+            }
+            
             const loadingDiv = document.getElementById('loading');
             const generateBtn = document.getElementById('generateBtn');
+            loadingDiv.style.display = 'block';
+            generateBtn.disabled = true;
             
-            if (generateType === 'text') {
-                const prompt = document.getElementById('prompt').value.trim();
-                if (!prompt) {
-                    showMessage('请填写角色描述', 'error');
-                    return;
-                }
-                loadingDiv.style.display = 'block';
-                generateBtn.disabled = true;
-                
-                try {
-                    // 发送到本地服务器
-                    const response = await fetch(`${API_BASE}/generate/text`, {
+            try {
+                let response;
+                if (attachedImageData) {
+                    // 有附带图片 -> 使用图片生成
+                    response = await fetch(`${API_BASE}/generate/image`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ 
+                            image: attachedImageData,
+                            prompt: prompt || ''
+                        })
+                    });
+                } else {
+                    // 只有文字 -> 使用文字生成
+                    response = await fetch(`${API_BASE}/generate/text`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ prompt: prompt })
                     });
-                    
-                    if (response.ok) {
-                        const blob = await response.blob();
-                        const imageUrl = URL.createObjectURL(blob);
-                        const img = new Image();
-                        img.onload = () => {
-                            applySkinToModel(img);
-                            saveToHistory(prompt, 'text', imageUrl);
-                            URL.revokeObjectURL(imageUrl);
-                        };
-                        img.src = imageUrl;
-                        showMessage('✅ 生成成功', 'success');
-                    } else {
-                        const error = await response.json();
-                        throw new Error(error.error || '生成失败');
-                    }
-                } catch (error) {
-                    console.error('生成失败:', error);
-                    showMessage('❌ 生成失败：' + error.message + '，请确保本地服务器已启动', 'error');
-                } finally {
-                    loadingDiv.style.display = 'none';
-                    generateBtn.disabled = false;
                 }
-            } 
-            else { // image type
-                if (!uploadedImageData) {
-                    showMessage('请上传参考图片', 'error');
-                    return;
-                }
-                const extraPrompt = document.getElementById('imagePrompt').value.trim();
-                loadingDiv.style.display = 'block';
-                generateBtn.disabled = true;
                 
-                try {
-                    const response = await fetch(`${API_BASE}/generate/image`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ 
-                            image: uploadedImageData,
-                            prompt: extraPrompt || ''
-                        })
-                    });
-                    
-                    if (response.ok) {
-                        const blob = await response.blob();
-                        const imageUrl = URL.createObjectURL(blob);
-                        const img = new Image();
-                        img.onload = () => {
-                            applySkinToModel(img);
-                            saveToHistory(extraPrompt || '图片生成', 'image', imageUrl);
-                            URL.revokeObjectURL(imageUrl);
-                        };
-                        img.src = imageUrl;
-                        showMessage('✅ 生成成功', 'success');
-                    } else {
-                        const error = await response.json();
-                        throw new Error(error.error || '生成失败');
-                    }
-                } catch (error) {
-                    console.error('生成失败:', error);
-                    showMessage('❌ 生成失败：' + error.message + '，请确保本地服务器已启动', 'error');
-                } finally {
-                    loadingDiv.style.display = 'none';
-                    generateBtn.disabled = false;
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const imageUrl = URL.createObjectURL(blob);
+                    const img = new Image();
+                    img.onload = () => {
+                        applySkinToModel(img);
+                        saveToHistory(prompt || '图片生成', attachedImageData ? 'image' : 'text', imageUrl);
+                        URL.revokeObjectURL(imageUrl);
+                    };
+                    img.src = imageUrl;
+                    showMessage('✅ 生成成功', 'success');
+                } else {
+                    const error = await response.json();
+                    throw new Error(error.error || '生成失败');
                 }
+            } catch (error) {
+                console.error('生成失败:', error);
+                showMessage('❌ 生成失败：' + error.message + '，请确保本地服务器已启动', 'error');
+            } finally {
+                loadingDiv.style.display = 'none';
+                generateBtn.disabled = false;
             }
         }
         
