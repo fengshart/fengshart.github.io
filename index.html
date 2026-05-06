@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>Minecraft 皮肤生成器 - Steve/Alex 正确分区</title>
+    <title>Minecraft 皮肤生成器 - 本地服务器版</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: Arial, sans-serif; background: #f0f2f5; min-height: 100vh; padding: 20px; }
@@ -11,12 +11,13 @@
         .right-panel { flex: 2; min-width: 500px; background: white; border-radius: 16px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
         .form-group { margin-bottom: 20px; }
         label { display: block; font-weight: bold; margin-bottom: 8px; color: #333; }
-        textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; font-family: inherit; resize: vertical; }
+        textarea, select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; font-family: inherit; }
         button { background: #007bff; color: white; padding: 12px 24px; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; width: 100%; }
         button:hover { background: #0056b3; }
+        button:disabled { background: #ccc; cursor: not-allowed; }
         #canvas-container { width: 100%; height: 450px; background: #1a1a2e; border-radius: 16px; overflow: hidden; cursor: grab; margin-bottom: 20px; }
         .generated-skin { margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 12px; text-align: center; }
-        .generated-skin img { max-width: 200px; border-radius: 8px; }
+        .generated-skin img { max-width: 200px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
         .loading { display: none; text-align: center; padding: 20px; }
         .spinner { border: 3px solid #f3f3f3; border-top: 3px solid #007bff; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 10px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
@@ -26,72 +27,50 @@
         .status-info { background: #d1ecf1; color: #0c5460; display: block; }
         .demand-list { margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; max-height: 300px; overflow-y: auto; }
         .demand-item { padding: 12px; border-bottom: 1px solid #eee; background: #f9f9f9; border-radius: 8px; margin-bottom: 8px; cursor: pointer; }
-        .model-selector { display: flex; gap: 12px; margin-bottom: 20px; background: #f0f2f5; padding: 12px; border-radius: 12px; }
-        .model-btn { flex: 1; text-align: center; padding: 10px; border-radius: 8px; cursor: pointer; background: #e9ecef; transition: all 0.2s; }
-        .model-btn.selected { background: #007bff; color: white; }
-        .upload-skin-btn { background: #28a745; color: white; padding: 8px 16px; border-radius: 8px; cursor: pointer; border: none; margin-left: 10px; }
+        .demand-item:hover { background: #e9ecef; }
         
-        /* 类似对话框的输入区域 */
-        .chat-input-area {
-            border: 1px solid #ddd;
-            border-radius: 16px;
-            overflow: hidden;
-            background: white;
-        }
-        .chat-textarea {
-            width: 100%;
-            border: none;
-            padding: 16px;
-            font-size: 14px;
-            font-family: inherit;
-            resize: vertical;
-            outline: none;
-        }
-        .chat-textarea:focus { outline: none; }
-        .attachment-area {
+        .model-selector {
             display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 8px 16px 12px 16px;
-            border-top: 1px solid #eee;
-            flex-wrap: wrap;
-            gap: 10px;
+            gap: 12px;
+            margin-bottom: 20px;
+            background: #f0f2f5;
+            padding: 12px;
+            border-radius: 12px;
         }
-        .attach-btn {
-            background: none;
-            border: 1px solid #ddd;
-            border-radius: 20px;
-            padding: 6px 14px;
-            cursor: pointer;
-            font-size: 13px;
-            width: auto;
-            color: #666;
-        }
-        .attach-btn:hover { background: #f5f5f5; border-color: #007bff; color: #007bff; }
-        .image-preview-area {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-        .preview-thumb {
-            width: 40px;
-            height: 40px;
+        .model-btn {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
             border-radius: 8px;
-            object-fit: cover;
-            border: 1px solid #ddd;
+            cursor: pointer;
+            background: #e9ecef;
+            transition: all 0.2s;
         }
-        .remove-attach-btn {
-            background: #dc3545;
-            border: none;
-            border-radius: 20px;
-            padding: 4px 12px;
-            font-size: 12px;
-            width: auto;
+        .model-btn.selected {
+            background: #007bff;
             color: white;
         }
-        .remove-attach-btn:hover { background: #c82333; }
-        .attach-info { font-size: 12px; color: #28a745; }
+        
+        .upload-area {
+            background: #f0f2f5;
+            padding: 12px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+        .upload-area input {
+            margin-top: 8px;
+            display: block;
+        }
+        #imagePreview {
+            margin-top: 10px;
+            text-align: center;
+        }
+        #previewImg {
+            max-width: 100px;
+            border-radius: 8px;
+            border: 2px solid #ddd;
+        }
+        
         @media (max-width: 768px) { .left-panel, .right-panel { min-width: auto; } }
     </style>
 </head>
@@ -99,27 +78,40 @@
     <div class="container">
         <div class="left-panel">
             <h2>🎨 Minecraft 皮肤生成器</h2>
+            
+            <!-- 模型选择器 -->
             <div class="model-selector">
                 <div id="steveBtn" class="model-btn selected">🧔 Steve<br><span style="font-size:11px">粗壮 (4px 手臂)</span></div>
                 <div id="alexBtn" class="model-btn">👧 Alex<br><span style="font-size:11px">纤细 (3px 手臂)</span></div>
-                <button id="uploadSkinBtn" class="upload-skin-btn">📤 上传皮肤</button>
-                <input type="file" id="skinFileInput" accept="image/png" style="display:none">
             </div>
             
-            <!-- 类似对话框的输入区域 -->
-            <div class="chat-input-area">
-                <textarea class="chat-textarea" id="promptInput" rows="3" placeholder="描述你想要的角色...&#10;例如：穿着红色披风的忍者、太空宇航员、中国古风侠客..."></textarea>
-                <div class="attachment-area">
-                    <div class="image-preview-area" id="imagePreviewArea"></div>
-                    <div style="display: flex; gap: 8px;">
-                        <button type="button" class="attach-btn" id="attachImageBtn">📎 附带图片</button>
-                        <button type="button" class="attach-btn" id="clearAttachBtn" style="display:none;">✖ 清除</button>
-                    </div>
+            <!-- 图片上传区域（第四步） -->
+            <div class="upload-area">
+                <label>📷 参考图片（可选）</label>
+                <input type="file" id="referenceImage" accept="image/*">
+                <div id="imagePreview" style="display: none;">
+                    <img id="previewImg" alt="预览">
+                    <br>
+                    <button type="button" id="clearImage" style="margin-top: 5px; width: auto; padding: 4px 12px; background: #dc3545;">清除</button>
                 </div>
             </div>
-            <input type="file" id="attachFileInput" accept="image/*" style="display:none">
             
-            <button id="generateBtn" style="margin-top: 16px;">✨ 生成皮肤</button>
+            <form id="generateForm">
+                <div class="form-group">
+                    <label>🎭 角色描述</label>
+                    <textarea rows="4" placeholder="例如：穿着红色披风的忍者、太空宇航员..." id="prompt" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label>🎨 风格</label>
+                    <select id="style">
+                        <option>原版风格</option>
+                        <option>卡通风格</option>
+                        <option>写实风格</option>
+                        <option>梦幻风格</option>
+                    </select>
+                </div>
+                <button type="submit" id="generateBtn">✨ 生成皮肤</button>
+            </form>
             <div id="msg" class="status-msg"></div>
             <div class="demand-list">
                 <h3>📋 历史记录</h3>
@@ -130,9 +122,12 @@
         <div class="right-panel">
             <h2>🎮 3D 皮肤预览</h2>
             <div id="canvas-container"></div>
-            <div class="loading" id="loading"><div class="spinner"></div><p>AI 正在生成皮肤...</p></div>
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>正在生成皮肤，请稍候...</p>
+            </div>
             <div class="generated-skin" id="generatedSkin" style="display: none;">
-                <h4>📸 当前皮肤</h4>
+                <h4>📸 生成的皮肤</h4>
                 <img id="skinImage" alt="皮肤">
                 <br><button id="downloadSkin" style="margin-top: 10px; width: auto; padding: 8px 20px;">💾 下载皮肤</button>
             </div>
@@ -155,11 +150,42 @@
         import * as THREE from 'three';
         import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
         
-        // ========== API 配置 ==========
-        // 修改为你的本地服务器地址（使用 ngrok 后的地址）
-        const API_BASE = 'http://localhost:5000';
+        // ========== 配置 ==========
+        // 本地服务器地址（根据实际情况修改）
+        const SERVER_URL = 'http://localhost:5000';
         
-        // ==================== Steve 模型正确分区 ====================
+        // ========== 参考图片相关变量 ==========
+        let referenceImageBase64 = null;
+        
+        // ========== 图片上传功能（第四步）==========
+        const refImageInput = document.getElementById('referenceImage');
+        const imagePreview = document.getElementById('imagePreview');
+        const previewImg = document.getElementById('previewImg');
+        const clearImageBtn = document.getElementById('clearImage');
+        
+        refImageInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    referenceImageBase64 = ev.target.result;
+                    previewImg.src = ev.target.result;
+                    imagePreview.style.display = 'block';
+                    console.log('✅ 参考图片已加载');
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+        
+        clearImageBtn.addEventListener('click', () => {
+            referenceImageBase64 = null;
+            refImageInput.value = '';
+            imagePreview.style.display = 'none';
+            previewImg.src = '';
+            console.log('🗑️ 已清除参考图片');
+        });
+        
+        // ========== Steve/Alex 模型分区 ==========
         const steveSkinRegions = {
             "头正面内层": { x: 8, y: 8, w: 8, h: 8 },
             "头背面内层": { x: 24, y: 8, w: 8, h: 8 },
@@ -235,33 +261,35 @@
             "左腿底面外层": { x: 24, y: 48, w: 4, h: 4 }
         };
         
-        // ==================== Alex 模型正确分区 ====================
-        const alexSkinRegions = { ...steveSkinRegions };
-        // 修改手臂为 3px 宽
-        alexSkinRegions["右臂正面内层"] = { x: 44, y: 20, w: 3, h: 12 };
-        alexSkinRegions["右臂背面内层"] = { x: 51, y: 20, w: 3, h: 12 };
-        alexSkinRegions["右臂左侧内层"] = { x: 40, y: 20, w: 4, h: 12 };
-        alexSkinRegions["右臂右侧内层"] = { x: 47, y: 20, w: 4, h: 12 };
-        alexSkinRegions["右臂顶面内层"] = { x: 44, y: 16, w: 3, h: 4 };
-        alexSkinRegions["右臂底面内层"] = { x: 47, y: 16, w: 3, h: 4 };
-        alexSkinRegions["右臂正面外层"] = { x: 44, y: 36, w: 3, h: 12 };
-        alexSkinRegions["右臂背面外层"] = { x: 51, y: 36, w: 3, h: 12 };
-        alexSkinRegions["右臂左侧外层"] = { x: 40, y: 36, w: 4, h: 12 };
-        alexSkinRegions["右臂右侧外层"] = { x: 47, y: 36, w: 4, h: 12 };
-        alexSkinRegions["右臂顶面外层"] = { x: 44, y: 32, w: 3, h: 4 };
-        alexSkinRegions["右臂底面外层"] = { x: 47, y: 32, w: 3, h: 4 };
-        alexSkinRegions["左臂正面内层"] = { x: 36, y: 52, w: 3, h: 12 };
-        alexSkinRegions["左臂背面内层"] = { x: 43, y: 52, w: 3, h: 12 };
-        alexSkinRegions["左臂左侧内层"] = { x: 32, y: 52, w: 4, h: 12 };
-        alexSkinRegions["左臂右侧内层"] = { x: 39, y: 52, w: 4, h: 12 };
-        alexSkinRegions["左臂顶面内层"] = { x: 36, y: 48, w: 3, h: 4 };
-        alexSkinRegions["左臂底面内层"] = { x: 39, y: 48, w: 3, h: 4 };
-        alexSkinRegions["左臂正面外层"] = { x: 52, y: 52, w: 3, h: 12 };
-        alexSkinRegions["左臂背面外层"] = { x: 59, y: 52, w: 3, h: 12 };
-        alexSkinRegions["左臂左侧外层"] = { x: 48, y: 52, w: 4, h: 12 };
-        alexSkinRegions["左臂右侧外层"] = { x: 55, y: 52, w: 4, h: 12 };
-        alexSkinRegions["左臂顶面外层"] = { x: 55, y: 48, w: 3, h: 4 };
-        alexSkinRegions["左臂底面外层"] = { x: 52, y: 48, w: 3, h: 4 };
+        const alexSkinRegions = {
+            // 头部、身体、腿与 Steve 相同
+            ...steveSkinRegions,
+            // 修改手臂坐标（3像素宽）
+            "右臂正面内层": { x: 44, y: 20, w: 3, h: 12 },
+            "右臂背面内层": { x: 51, y: 20, w: 3, h: 12 },
+            "右臂左侧内层": { x: 40, y: 20, w: 4, h: 12 },
+            "右臂右侧内层": { x: 47, y: 20, w: 4, h: 12 },
+            "右臂顶面内层": { x: 44, y: 16, w: 3, h: 4 },
+            "右臂底面内层": { x: 47, y: 16, w: 3, h: 4 },
+            "右臂正面外层": { x: 44, y: 36, w: 3, h: 12 },
+            "右臂背面外层": { x: 51, y: 36, w: 3, h: 12 },
+            "右臂左侧外层": { x: 40, y: 36, w: 4, h: 12 },
+            "右臂右侧外层": { x: 47, y: 36, w: 4, h: 12 },
+            "右臂顶面外层": { x: 44, y: 32, w: 3, h: 4 },
+            "右臂底面外层": { x: 47, y: 32, w: 3, h: 4 },
+            "左臂正面内层": { x: 36, y: 52, w: 3, h: 12 },
+            "左臂背面内层": { x: 43, y: 52, w: 3, h: 12 },
+            "左臂左侧内层": { x: 32, y: 52, w: 4, h: 12 },
+            "左臂右侧内层": { x: 39, y: 52, w: 4, h: 12 },
+            "左臂顶面内层": { x: 36, y: 48, w: 3, h: 4 },
+            "左臂底面内层": { x: 39, y: 48, w: 3, h: 4 },
+            "左臂正面外层": { x: 52, y: 52, w: 3, h: 12 },
+            "左臂背面外层": { x: 59, y: 52, w: 3, h: 12 },
+            "左臂左侧外层": { x: 48, y: 52, w: 4, h: 12 },
+            "左臂右侧外层": { x: 55, y: 52, w: 4, h: 12 },
+            "左臂顶面外层": { x: 55, y: 48, w: 3, h: 4 },
+            "左臂底面外层": { x: 52, y: 48, w: 3, h: 4 }
+        };
         
         // ========== 模型参数 ==========
         const MODEL_STEVE = 'steve';
@@ -273,9 +301,6 @@
             [MODEL_STEVE]: { inner: 0.4, outer: 0.45, xOffset: 0.6 },
             [MODEL_ALEX]: { inner: 0.3, outer: 0.35, xOffset: 0.55 }
         };
-        
-        // 附带的图片数据
-        let attachedImageData = null;
         
         // ========== 辅助函数 ==========
         function getMaterialFromRegion(img, region, useTransparent = false) {
@@ -292,7 +317,7 @@
             return new THREE.MeshStandardMaterial({ map: texture });
         }
         
-        // ========== 初始化场景 ==========
+        // ========== 初始化3D场景 ==========
         const container = document.getElementById('canvas-container');
         const scene = new THREE.Scene();
         scene.background = new THREE.Color(0x1a1a2e);
@@ -464,7 +489,7 @@
                 tempImg.onload = () => applySkinToModel(tempImg);
                 tempImg.src = currentSkinDataUrl;
             }
-            showMessage(`已切换到 ${modelType === MODEL_STEVE ? 'Steve（粗壮手臂）' : 'Alex（纤细手臂）'}`, 'info');
+            showMessage(`已切换到 ${modelType === MODEL_STEVE ? 'Steve' : 'Alex'} 模型`, 'info');
         }
         
         document.getElementById('steveBtn').onclick = () => {
@@ -485,6 +510,7 @@
             if (!img) return;
             currentSkinDataUrl = img.src;
             
+            // 头部
             const headMaterials = [
                 getMaterialFromRegion(img, currentSkinRegions["头右侧内层"]),
                 getMaterialFromRegion(img, currentSkinRegions["头左侧内层"]),
@@ -501,6 +527,7 @@
                 getMaterialFromRegion(img, currentSkinRegions["头正面外层"], true),
                 getMaterialFromRegion(img, currentSkinRegions["头背面外层"], true)
             ];
+            // 身体
             const bodyMaterials = [
                 getMaterialFromRegion(img, currentSkinRegions["身体右侧内层"]),
                 getMaterialFromRegion(img, currentSkinRegions["身体左侧内层"]),
@@ -517,6 +544,7 @@
                 getMaterialFromRegion(img, currentSkinRegions["身体正面外层"], true),
                 getMaterialFromRegion(img, currentSkinRegions["身体背面外层"], true)
             ];
+            // 左臂
             const armLeftMaterials = [
                 getMaterialFromRegion(img, currentSkinRegions["左臂右侧内层"]),
                 getMaterialFromRegion(img, currentSkinRegions["左臂左侧内层"]),
@@ -533,6 +561,7 @@
                 getMaterialFromRegion(img, currentSkinRegions["左臂正面外层"], true),
                 getMaterialFromRegion(img, currentSkinRegions["左臂背面外层"], true)
             ];
+            // 右臂
             const armRightMaterials = [
                 getMaterialFromRegion(img, currentSkinRegions["右臂右侧内层"]),
                 getMaterialFromRegion(img, currentSkinRegions["右臂左侧内层"]),
@@ -549,6 +578,7 @@
                 getMaterialFromRegion(img, currentSkinRegions["右臂正面外层"], true),
                 getMaterialFromRegion(img, currentSkinRegions["右臂背面外层"], true)
             ];
+            // 左腿
             const legLeftMaterials = [
                 getMaterialFromRegion(img, currentSkinRegions["左腿右侧内层"]),
                 getMaterialFromRegion(img, currentSkinRegions["左腿左侧内层"]),
@@ -565,6 +595,7 @@
                 getMaterialFromRegion(img, currentSkinRegions["左腿正面外层"], true),
                 getMaterialFromRegion(img, currentSkinRegions["左腿背面外层"], true)
             ];
+            // 右腿
             const legRightMaterials = [
                 getMaterialFromRegion(img, currentSkinRegions["右腿右侧内层"]),
                 getMaterialFromRegion(img, currentSkinRegions["右腿左侧内层"]),
@@ -597,122 +628,79 @@
             
             document.getElementById('skinImage').src = img.src;
             document.getElementById('generatedSkin').style.display = 'block';
-            console.log(`✅ ${currentModel === MODEL_STEVE ? 'Steve' : 'Alex'} 皮肤已应用`);
+            console.log(`✅ 皮肤已应用到 ${currentModel === MODEL_STEVE ? 'Steve' : 'Alex'} 模型`);
         }
         
-        // 上传用户自己的皮肤文件
-        document.getElementById('uploadSkinBtn').onclick = () => document.getElementById('skinFileInput').click();
-        document.getElementById('skinFileInput').onchange = (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = (ev) => {
-                    const img = new Image();
-                    img.onload = () => applySkinToModel(img);
-                    img.src = ev.target.result;
-                };
-                reader.readAsDataURL(file);
-            }
-        };
-        
-        // ========== 图片附件逻辑 ==========
-        const attachImageBtn = document.getElementById('attachImageBtn');
-        const attachFileInput = document.getElementById('attachFileInput');
-        const imagePreviewArea = document.getElementById('imagePreviewArea');
-        const clearAttachBtn = document.getElementById('clearAttachBtn');
-        
-        attachImageBtn.onclick = () => attachFileInput.click();
-        
-        attachFileInput.onchange = (e) => {
-            if (e.target.files[0]) {
-                const file = e.target.files[0];
-                const reader = new FileReader();
-                reader.onload = (ev) => {
-                    attachedImageData = ev.target.result;
-                    imagePreviewArea.innerHTML = `
-                        <img src="${attachedImageData}" class="preview-thumb">
-                        <span class="attach-info">已附带1张图片</span>
-                    `;
-                    clearAttachBtn.style.display = 'inline-block';
-                    attachImageBtn.textContent = '📎 更换图片';
-                };
-                reader.readAsDataURL(file);
-            }
-        };
-        
-        clearAttachBtn.onclick = () => {
-            attachedImageData = null;
-            imagePreviewArea.innerHTML = '';
-            clearAttachBtn.style.display = 'none';
-            attachImageBtn.textContent = '📎 附带图片';
-            attachFileInput.value = '';
-        };
-        
-        // ========== AI 生成皮肤（发送到本地服务器）==========
-        async function generateSkin() {
-            const prompt = document.getElementById('promptInput').value.trim();
-            if (!prompt && !attachedImageData) {
-                showMessage('请填写描述或附带图片', 'error');
-                return;
-            }
-            
+        // ========== 调用本地服务器生成皮肤（第三步）==========
+        async function generateSkin(prompt, style, referenceImage = null) {
             const loadingDiv = document.getElementById('loading');
             const generateBtn = document.getElementById('generateBtn');
+            
             loadingDiv.style.display = 'block';
             generateBtn.disabled = true;
             
             try {
-                let response;
-                if (attachedImageData) {
-                    // 有附带图片 -> 使用图片生成
-                    response = await fetch(`${API_BASE}/generate/image`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ 
-                            image: attachedImageData,
-                            prompt: prompt || ''
-                        })
-                    });
-                } else {
-                    // 只有文字 -> 使用文字生成
-                    response = await fetch(`${API_BASE}/generate/text`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ prompt: prompt })
-                    });
+                // 构建请求数据
+                const requestData = {
+                    prompt: prompt,
+                    style: style
+                };
+                
+                // 如果有参考图片，添加到请求中
+                if (referenceImage) {
+                    requestData.image = referenceImage;
                 }
                 
-                if (response.ok) {
-                    const blob = await response.blob();
-                    const imageUrl = URL.createObjectURL(blob);
+                console.log('📤 发送请求到本地服务器:', { prompt, style, hasImage: !!referenceImage });
+                
+                // 发送请求到本地服务器
+                const response = await fetch(`${SERVER_URL}/generate`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    console.log('✅ 皮肤生成成功');
+                    // 显示生成的皮肤图片
+                    const skinImgUrl = data.image;
+                    document.getElementById('skinImage').src = skinImgUrl;
+                    document.getElementById('generatedSkin').style.display = 'block';
+                    
+                    // 应用到3D模型
                     const img = new Image();
-                    img.onload = () => {
-                        applySkinToModel(img);
-                        saveToHistory(prompt || '图片生成', attachedImageData ? 'image' : 'text', imageUrl);
-                        URL.revokeObjectURL(imageUrl);
-                    };
-                    img.src = imageUrl;
-                    showMessage('✅ 生成成功', 'success');
+                    img.onload = () => applySkinToModel(img);
+                    img.src = skinImgUrl;
+                    
+                    // 保存到历史记录
+                    saveToHistory(prompt, style, skinImgUrl);
+                    
+                    showMessage('✅ 皮肤生成成功', 'success');
                 } else {
-                    const error = await response.json();
-                    throw new Error(error.error || '生成失败');
+                    throw new Error(data.error || '生成失败');
                 }
             } catch (error) {
-                console.error('生成失败:', error);
-                showMessage('❌ 生成失败：' + error.message + '，请确保本地服务器已启动', 'error');
+                console.error('❌ 请求失败:', error);
+                if (error.message.includes('Failed to fetch')) {
+                    showMessage('❌ 无法连接到本地服务器，请确保服务器已启动（运行 python server.py）', 'error');
+                } else {
+                    showMessage('❌ 生成失败: ' + error.message, 'error');
+                }
             } finally {
                 loadingDiv.style.display = 'none';
                 generateBtn.disabled = false;
             }
         }
         
-        document.getElementById('generateBtn').onclick = generateSkin;
-        
         // ========== 历史记录 ==========
-        function saveToHistory(prompt, type, imageDataUrl) {
+        function saveToHistory(prompt, style, imageDataUrl) {
             let history = localStorage.getItem('mc_skin_history');
             history = history ? JSON.parse(history) : [];
-            history.unshift({ id: Date.now(), prompt, type, imageData: imageDataUrl, time: new Date().toLocaleString() });
+            history.unshift({ id: Date.now(), prompt, style, imageData: imageDataUrl, time: new Date().toLocaleString() });
             if (history.length > 10) history.pop();
             localStorage.setItem('mc_skin_history', JSON.stringify(history));
             loadHistory();
@@ -729,16 +717,19 @@
             let html = '';
             for (let i = 0; i < history.length; i++) {
                 const h = history[i];
-                html += `<div class="demand-item" data-index="${i}"><strong>📝 ${escapeHtml(h.prompt.substring(0, 50))}</strong><div>🎭 ${h.type} | 🕐 ${h.time}</div></div>`;
+                html += `<div class="demand-item" data-index="${i}"><strong>📝 ${escapeHtml(h.prompt.substring(0, 50))}</strong><div>🎭 ${h.style} | 🕐 ${h.time}</div></div>`;
             }
             container.innerHTML = html;
             document.querySelectorAll('.demand-item').forEach((item, idx) => {
                 item.onclick = () => {
                     const historyData = JSON.parse(localStorage.getItem('mc_skin_history'));
                     if (historyData && historyData[idx]) {
+                        const skinDataUrl = historyData[idx].imageData;
                         const img = new Image();
                         img.onload = () => applySkinToModel(img);
-                        img.src = historyData[idx].imageData;
+                        img.src = skinDataUrl;
+                        document.getElementById('skinImage').src = skinDataUrl;
+                        document.getElementById('generatedSkin').style.display = 'block';
                         showMessage('已加载历史皮肤', 'info');
                     }
                 };
@@ -766,6 +757,7 @@
             setTimeout(() => { msgDiv.className = 'status-msg'; }, 3000);
         }
         
+        // ========== 下载皮肤 ==========
         document.getElementById('downloadSkin').onclick = () => {
             const skinImg = document.getElementById('skinImage');
             if (skinImg.src) {
@@ -776,14 +768,39 @@
             }
         };
         
+        // ========== 表单提交（第三步）==========
+        const form = document.getElementById('generateForm');
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const prompt = document.getElementById('prompt').value.trim();
+            const style = document.getElementById('style').value;
+            
+            if (!prompt) {
+                showMessage('请填写角色描述', 'error');
+                return;
+            }
+            
+            // 调用本地服务器生成皮肤（传递参考图片）
+            await generateSkin(prompt, style, referenceImageBase64);
+        });
+        
         document.getElementById('clearHistory').onclick = clearHistory;
         loadHistory();
         
-        // 加载默认 Steve 皮肤
-        const defaultSteveImg = new Image();
-        defaultSteveImg.crossOrigin = "Anonymous";
-        defaultSteveImg.onload = () => applySkinToModel(defaultSteveImg);
-        defaultSteveImg.src = 'https://minotar.net/skin/steve';
+        // 显示服务器连接状态
+        async function checkServerStatus() {
+            try {
+                const response = await fetch(`${SERVER_URL}/`);
+                if (response.ok) {
+                    console.log('✅ 本地服务器连接正常');
+                    showMessage('✅ 已连接到本地服务器', 'info');
+                }
+            } catch (error) {
+                console.warn('⚠️ 本地服务器未启动');
+                showMessage('⚠️ 未连接到本地服务器，请运行 python server.py', 'info');
+            }
+        }
+        setTimeout(checkServerStatus, 1000);
     </script>
 </body>
 </html>
